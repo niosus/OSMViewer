@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <QGridLayout>
 
 #include "renderarea.h"
 #include "window.h"
@@ -22,8 +23,11 @@ Window::Window()
     setWindowTitle(tr("Test Map"));
 
     QObject::connect(
-                dataGenerator, SIGNAL(dataGenerated(std::vector<QPoint>)),
-                renderArea, SLOT(receiveNewData(std::vector<QPoint>)));
+                dataGenerator, SIGNAL(dataGenerated(QVector<QPolygonF>&)),
+                renderArea, SLOT(receiveNewData(QVector<QPolygonF>&)));
+    QObject::connect(
+                dataGenerator, SIGNAL(boundariesUpdated(QVector<double>&)),
+                renderArea, SLOT(updateBounds(QVector<double>)));
     dataGenerator->generateData();
 }
 

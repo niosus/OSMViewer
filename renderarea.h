@@ -14,16 +14,18 @@ class RenderArea : public QWidget
     Q_OBJECT
 
 public:
-    enum Shape { Line, Points, Rect};
+    enum Shape { Line, Points, Rect, Polygon};
 
     RenderArea(QWidget *parent = 0);
+
+    QVector<double> _bounds;
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
 public slots:
-    void receiveNewData(std::vector<QPoint> coords);
-    void setShape(Shape shape);
+    void updateBounds(const QVector<double> &bounds);
+    void receiveNewData(QVector<QPolygonF> &ways);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -33,7 +35,7 @@ private:
     QPen pen;
     QBrush brush;
     bool antialiased;
-    std::vector<QPoint> coords;
+    QVector<QPolygonF> _ways;
 };
 
 #endif

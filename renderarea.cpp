@@ -1,11 +1,12 @@
 #include <QtGui>
+#include <QDebug>
 
 #include "renderarea.h"
 
 RenderArea::RenderArea(QWidget *parent)
     : QWidget(parent)
 {
-    shape = Line;
+    shape = Polygon;
     antialiased = true;
 
     setBackgroundRole(QPalette::Base);
@@ -19,25 +20,22 @@ QSize RenderArea::minimumSizeHint() const
 
 QSize RenderArea::sizeHint() const
 {
-    return QSize(400, 200);
+    return QSize(400, 400);
 }
 
-void RenderArea::setShape(Shape shape)
+void RenderArea::receiveNewData(QVector<QPolygonF>& ways)
 {
-    this->shape = shape;
-//    update();
-}
-
-void RenderArea::receiveNewData(std::vector<QPoint> coords)
-{
-    this->coords = coords;
+    this->_ways = ways;
     update();
+}
+
+void RenderArea::updateBounds(const QVector<double> &bounds)
+{
+    _bounds = bounds;
 }
 
 void RenderArea::paintEvent(QPaintEvent * /* event */)
 {
-
-    QRect rect(coords[0].x(), coords[0].y(), coords[2].x(), coords[2].y());
 
     QPainter painter(this);
     painter.setPen(pen);
@@ -48,11 +46,18 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     painter.save();
 
     switch (shape) {
-    case Line:
-        painter.drawLine(rect.bottomLeft(), rect.topRight());
-        break;
-    case Rect:
-        painter.drawRect(rect);
+    case Polygon:
+        for (QPolygonF way : _ways)
+        {
+            if (*way.begin() == *(way.end()-1))
+            {
+                painter.drawPolygon(way);
+            }
+            else
+            {
+                painter.drawPolyline(way);
+            }
+        }
         break;
     }
     painter.restore();
