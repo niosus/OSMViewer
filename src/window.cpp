@@ -4,6 +4,7 @@
 #include "renderarea.h"
 #include "window.h"
 #include "datagenerator.h"
+#include "mypolygonf.h"
 
 const int IdRole = Qt::UserRole;
 
@@ -23,11 +24,11 @@ Window::Window()
     setWindowTitle(tr("Test Map"));
 
     QObject::connect(
-                dataGenerator, SIGNAL(dataGenerated(QVector<QPolygonF>&)),
-                renderArea, SLOT(receiveNewData(QVector<QPolygonF>&)));
+                dataGenerator, SIGNAL(dataGenerated(QVector<MyPolygonF>&, QVector<MyPolygonF>&)),
+                renderArea, SLOT(receiveNewData(QVector<MyPolygonF>&, QVector<MyPolygonF>&)));
     QObject::connect(
                 dataGenerator, SIGNAL(boundariesUpdated(QVector<double>&)),
-                renderArea, SLOT(updateBounds(QVector<double>)));
+                renderArea, SLOT(updateBounds(QVector<double>&)));
     dataGenerator->generateData();
 }
 

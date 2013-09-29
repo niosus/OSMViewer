@@ -4,6 +4,7 @@
 #include <QXmlStreamAttributes>
 #include <QMessageBox>
 #include <QDebug>
+#include <QVector>
 
 
 DataGenerator::DataGenerator(){}
@@ -11,7 +12,7 @@ DataGenerator::DataGenerator(){}
 void DataGenerator::generateData()
 {
     getNodesAndWaysFromXml();
-    emit dataGenerated(_ways);
+    emit dataGenerated(_roads, _houses);
 }
 
 void DataGenerator::storeNewNode(QXmlStreamReader *xmlReader)
@@ -29,24 +30,10 @@ void DataGenerator::storeNewNode(QXmlStreamReader *xmlReader)
         else if (attr.name()=="lat")
         {
             lat = attr.value().toDouble();
-            //HACK!!!!!
-            if (_bounds.size()>0)
-            {
-                lat -=  _bounds[0];
-                lat /= (_bounds[2] - _bounds[0]);
-                lat*=400;
-            }
         }
         else if (attr.name()=="lon")
         {
             lon = attr.value().toDouble();
-            //HACK!!!!!
-            if (_bounds.size()>0)
-            {
-                lon -=  _bounds[1];
-                lon /= (_bounds[3] - _bounds[1]);
-                lon*=400;
-            }
         }
     }
     if (id && lat && lon)
@@ -82,19 +69,20 @@ void DataGenerator::updateBounds(QXmlStreamReader *xmlReader)
     }
     if (minLat && minLon && maxLat && maxLon)
     {
-        _bounds.clear();
-        _bounds.push_back(minLat);
-        _bounds.push_back(minLon);
-        _bounds.push_back(maxLat);
-        _bounds.push_back(maxLon);
-        emit boundariesUpdated(_bounds);
+        QVector<double> bounds;
+        bounds.clear();
+        bounds.push_back(minLat);
+        bounds.push_back(minLon);
+        bounds.push_back(maxLat);
+        bounds.push_back(maxLon);
+        emit boundariesUpdated(bounds);
     }
 }
 
 void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
 {
     //We are going to fill this Polygon now
-    QPolygonF polygon;
+    MyPolygonF polygon;
 
     //loop through everything that a way contains
     while(!(xmlReader->tokenType() == QXmlStreamReader::EndElement
@@ -119,17 +107,20 @@ void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
         /* ...and next... */
         xmlReader->readNext();
     }
-    _ways.push_back(polygon);
+    if (*(polygon.begin()) == *(polygon.end()-1))
+        _houses.push_back(polygon);
+    else _roads.push_back(polygon);
 }
 
 void DataGenerator::getNodesAndWaysFromXml()
 {
     _nodes.clear();
-    _ways.clear();
+    _houses.clear();
+    _roads.clear();
     QFile *xmlFile = new QFile(":/maps/map_test.osm");
     if (!xmlFile->open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(new QWidget,"Load XML File Problem",
-            "Couldn't open xmlfile.xml to load settings for download",
+            QMessageBox::critical(new QWidget,"Load OSM File Problem",
+            "Couldn't load map file",
             QMessageBox::Ok);
             return;
     }

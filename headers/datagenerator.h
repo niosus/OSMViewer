@@ -3,10 +3,10 @@
 
 #include <QObject>
 #include <QPointF>
-#include <QPolygonF>
 #include <QVector>
 #include <QHash>
 #include <QXmlStreamReader>
+#include "mypolygonf.h"
 
 class DataGenerator: public QObject
 {
@@ -17,9 +17,11 @@ public:
     void generateData();
 
 private:
+    enum NODE_ATTRS {LONGITUDE, LATITUDE, ID};
+
     QHash<long, QPointF> _nodes;
-    QVector<QPolygonF> _ways;
-    QVector<double> _bounds;
+    QVector<MyPolygonF> _roads;
+    QVector<MyPolygonF> _houses;
 
     void getNodesAndWaysFromXml();
     void storeNewNode(QXmlStreamReader *xmlReader);
@@ -28,7 +30,7 @@ private:
 
 signals:
     void boundariesUpdated(QVector<double> &bounds);
-    void dataGenerated(QVector<QPolygonF> &ways);
+    void dataGenerated(QVector<MyPolygonF> &roads, QVector<MyPolygonF> &houses);
 
 };
 

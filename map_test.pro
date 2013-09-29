@@ -13,17 +13,22 @@ TEMPLATE = app
 
 QMAKE_CXXFLAGS += -std=c++11
 
-SOURCES += main.cpp \
-    window.cpp \
-    renderarea.cpp \
-    datagenerator.cpp
+SOURCES += src/main.cpp \
+    src/window.cpp \
+    src/renderarea.cpp \
+    src/datagenerator.cpp
 
 HEADERS  += \
-    window.h \
-    renderarea.h \
-    datagenerator.h
+    headers/window.h \
+    headers/renderarea.h \
+    headers/datagenerator.h \
+    headers/mypolygonf.h
+
+INCLUDEPATH += \
+    headers \
+    src
 
 FORMS    +=
 
-OTHER_FILES += \
-    map_test.osm
+RESOURCES += \
+    temp_maps.qrc
