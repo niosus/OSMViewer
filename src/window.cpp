@@ -24,8 +24,14 @@ Window::Window()
     setWindowTitle(tr("Test Map"));
 
     QObject::connect(
-                dataGenerator, SIGNAL(dataGenerated(QVector<MyPolygonF>&, QVector<MyPolygonF>&)),
-                renderArea, SLOT(receiveNewData(QVector<MyPolygonF>&, QVector<MyPolygonF>&)));
+                dataGenerator, SIGNAL(dataGenerated(QVector<MyPolygonF>&,
+                                                    QVector<MyPolygonF>&,
+                                                    QVector<MyPolygonF>&,
+                                                    QVector<MyPolygonF>&)),
+                renderArea, SLOT(receiveNewData(QVector<MyPolygonF>&,
+                                                QVector<MyPolygonF>&,
+                                                QVector<MyPolygonF>&,
+                                                QVector<MyPolygonF>&)));
     QObject::connect(
                 dataGenerator, SIGNAL(boundariesUpdated(QVector<double>&)),
                 renderArea, SLOT(updateBounds(QVector<double>&)));

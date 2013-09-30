@@ -12,7 +12,7 @@ DataGenerator::DataGenerator(){}
 void DataGenerator::generateData()
 {
     getNodesAndWaysFromXml();
-    emit dataGenerated(_roads, _houses);
+    emit dataGenerated(_roads, _houses, _parkings, _other);
 }
 
 void DataGenerator::storeNewNode(QXmlStreamReader *xmlReader)
@@ -83,13 +83,15 @@ void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
 {
     //We are going to fill this Polygon now
     MyPolygonF polygon;
-
+    enum WayType {BUILDING, ROAD, PARKING, NONE};
+    WayType wayType = WayType::NONE;
     //loop through everything that a way contains
     while(!(xmlReader->tokenType() == QXmlStreamReader::EndElement
             && xmlReader->name() == "way"))
     {
         if(xmlReader->tokenType() == QXmlStreamReader::StartElement) {
-            if(xmlReader->name() == "nd") {
+            if(xmlReader->name() == "nd")
+            {
                 QXmlStreamAttributes attributes = xmlReader->attributes();
                 for (QXmlStreamAttribute attr : attributes)
                 {
@@ -103,13 +105,50 @@ void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
                     }
                 }
             }
+            else if (xmlReader->name() == "tag")
+            {
+                QXmlStreamAttributes attributes = xmlReader->attributes();
+                for (int i = 0; i < attributes.size(); ++i)
+                {
+                    if (attributes[i].name()=="k")
+                    {
+                        QString key = attributes[i].value().toString();
+                        if (key == "building")
+                        {
+                            wayType = WayType::BUILDING;
+                        }
+                        else if (key == "amenity")
+                        {
+                            QString value = attributes[i+1].value().toString();
+                            if (value == "parking")
+                                wayType = WayType::PARKING;
+                        }
+                        else if (key == "highway")
+                        {
+                            wayType = WayType::ROAD;
+                        }
+                    }
+                }
+            }
         }
         /* ...and next... */
         xmlReader->readNext();
     }
     if (*(polygon.begin()) == *(polygon.end()-1))
-        _houses.push_back(polygon);
-    else _roads.push_back(polygon);
+    {
+        if (wayType == WayType::BUILDING)
+            _houses.push_back(polygon);
+        else if (wayType == WayType::PARKING)
+            _parkings.push_back(polygon);
+    }
+    else if (wayType == WayType::ROAD)
+    {
+        _roads.push_back(polygon);
+    }
+    else
+    {
+        _other.push_back(polygon);
+    }
 }
 
 void DataGenerator::getNodesAndWaysFromXml()
@@ -117,7 +156,7 @@ void DataGenerator::getNodesAndWaysFromXml()
     _nodes.clear();
     _houses.clear();
     _roads.clear();
-    QFile *xmlFile = new QFile(":/maps/map_test.osm");
+    QFile *xmlFile = new QFile(":/maps/big_map.osm");
     if (!xmlFile->open(QIODevice::ReadOnly)) {
             QMessageBox::critical(new QWidget,"Load OSM File Problem",
             "Couldn't load map file",

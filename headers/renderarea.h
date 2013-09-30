@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <vector>
 #include <mypolygonf.h>
+#include <QWheelEvent>
 
 
 //! [0]
@@ -24,10 +25,15 @@ public:
 
 public slots:
     void updateBounds(QVector<double> &bounds);
-    void receiveNewData(QVector<MyPolygonF> &roads, QVector<MyPolygonF> &houses);
+    void receiveNewData(QVector<MyPolygonF> &roads,
+            QVector<MyPolygonF> &houses,
+            QVector<MyPolygonF> &parkings,
+            QVector<MyPolygonF> &other);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -35,12 +41,17 @@ protected:
 private:
     QVector<MyPolygonF> _roads;
     QVector<MyPolygonF> _houses;
+    QVector<MyPolygonF> _parkings;
+    QVector<MyPolygonF> _other;
 
     bool _dragging;
     QPointF _startDragPoint;
     QPointF _dragTranslation;
+    float _scaleValue;
     void drawRoads();
     void drawHouses();
+    void drawParkings();
+    void drawOther();
 };
 
 #endif

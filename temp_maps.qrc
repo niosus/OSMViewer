@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>maps/map_test.osm</file>
+        <file>maps/big_map.osm</file>
     </qresource>
 </RCC>

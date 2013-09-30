@@ -22,6 +22,8 @@ private:
     QHash<long, QPointF> _nodes;
     QVector<MyPolygonF> _roads;
     QVector<MyPolygonF> _houses;
+    QVector<MyPolygonF> _parkings;
+    QVector<MyPolygonF> _other;
 
     void getNodesAndWaysFromXml();
     void storeNewNode(QXmlStreamReader *xmlReader);
@@ -30,7 +32,11 @@ private:
 
 signals:
     void boundariesUpdated(QVector<double> &bounds);
-    void dataGenerated(QVector<MyPolygonF> &roads, QVector<MyPolygonF> &houses);
+    void dataGenerated(
+            QVector<MyPolygonF> &roads,
+            QVector<MyPolygonF> &houses,
+            QVector<MyPolygonF> &_parkings,
+            QVector<MyPolygonF> &_other);
 
 };
 
