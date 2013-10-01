@@ -52,6 +52,8 @@ private:
     void drawHouses();
     void drawParkings();
     void drawOther();
+
+    QTransform _worldToView;
 };
 
 #endif

@@ -39,27 +39,23 @@ void RenderArea::mouseReleaseEvent(QMouseEvent *event)
 
 void RenderArea::wheelEvent(QWheelEvent *event)
 {
+    bool good;
+    QTransform viewToWorld = _worldToView.inverted(&good);
+
+    QPointF mouseInWorld = viewToWorld.map(event->posF());
+    qDebug() << mouseInWorld;
+
     QPoint numDegrees = event->angleDelta()/3;
-    QPoint centerPosition;
-    centerPosition.rx() += 0.5 * this->frameSize().width();
-    centerPosition.ry() += 0.5 * this->frameSize().height();
-    float oldScaleValue = _scaleValue;
+
     _scaleValue += numDegrees.y();
-    float coef = _scaleValue-oldScaleValue;
-    coef*=0.5;
-    if (numDegrees.y()>0)
-    {
-//        _dragTranslation -= 0.1*(event->pos() - centerPosition);
-        _dragTranslation -= QPointF(coef, coef) - 0.1 * (centerPosition - event->posF());
-    }
-    else
-    {
-        _dragTranslation -= QPointF(coef, coef) - 0.1 * (centerPosition - event->posF());
-    }
-    qDebug() << "center " << centerPosition;
-    qDebug() << "event " << event->pos();
-    qDebug() << "_dragTranslation " << _dragTranslation;
-    qDebug() << "scale " << _scaleValue;
+
+    _worldToView.reset();
+    _worldToView.translate(_dragTranslation.x(), _dragTranslation.y());
+    _worldToView.scale(_scaleValue, _scaleValue);
+    viewToWorld = _worldToView.inverted(&good);
+    QPointF mouseInWorld2 = viewToWorld.map(event->posF());
+    qDebug() << mouseInWorld2;
+    _dragTranslation += (mouseInWorld2-mouseInWorld)*_scaleValue;
     event->accept();
     update();
 }
@@ -111,8 +107,12 @@ void RenderArea::updateBounds(QVector<double> &bounds)
 void RenderArea::drawRoads()
 {
     QPainter painter(this);
-    painter.translate(_dragTranslation);
-    painter.scale(_scaleValue, _scaleValue);
+
+    _worldToView.reset();
+    _worldToView.translate(_dragTranslation.x(), _dragTranslation.y());
+    _worldToView.scale(_scaleValue, _scaleValue);
+    painter.setWorldTransform(_worldToView);
+
     QPen pen(Qt::red);
     pen.setCapStyle(Qt::RoundCap);
     pen.setWidthF(0);
