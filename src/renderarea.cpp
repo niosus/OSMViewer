@@ -52,13 +52,15 @@ void RenderArea::wheelEvent(QWheelEvent *event)
 
         QPointF pointer = viewToWorld.map(QPointF(event->pos()));
 
-        // move origin to pointer
+        // Read backwards
+
+        // 3. move origin back to where the pointer was
         this->worldToView.translate(pointer.x(), pointer.y());
 
-        // scale about origin
+        // 2. scale about origin
         this->worldToView.scale(s, s);
 
-        // move origin back
+        // 1. move world so that position of pointer is moved to origin
         this->worldToView.translate(- pointer.x(), -pointer.y());
 
         update();
@@ -108,18 +110,21 @@ void RenderArea::updateBounds(QHash<QString, double> &bounds)
 
     // Transformation
     //    from: pixel coordinate system (upper left is (0,0))
-    //    to: lat/lon coordinate system with bounds
+    //    to: map coordinate system (Mercartor'd geo coordinates)
     //
-    // You can construct it if you start in the lat/lon system
-    // then you modify the map data so it ends up centered on
-    // the screen
+    // You can construct it if you start with the destination system
+    // then think how you need to transform the data so it ends up
+    // correctly in the origin coordinate system
 
     this->worldToView.reset();
 
     // Read backwards
 
-    // 3. move the center of the map to the center of the canvas
+    // 4. move the center of the map (now on upper-left) to the center of the canvas
     this->worldToView.translate( width / 2, height / 2);
+
+    // 3. Flip y-coordinate since pixel coordinate grow downwards
+    this->worldToView.scale(1., -1.);
 
     // 2. Normalize ( " / worldSize " ) then stretch to fill canvas ("canvasSize ")
     this->worldToView.scale(canvasSize / worldSize, - canvasSize / worldSize);
@@ -255,7 +260,6 @@ void RenderArea::drawRuler(QPainter & painter)
         // length of ruler in pixels
         int rulerWidth = rulerWidthWorld / viewToWorld.m11();
 
-        int width = this->frameSize().width();
         int height = this->frameSize().height();
         int margin = 10;
         int rulerX = margin;
