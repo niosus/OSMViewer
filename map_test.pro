@@ -16,13 +16,14 @@ QMAKE_CXXFLAGS += -std=c++11
 SOURCES += src/main.cpp \
     src/window.cpp \
     src/renderarea.cpp \
-    src/datagenerator.cpp
+    src/datagenerator.cpp \
+    src/mercator.cpp
 
 HEADERS  += \
     headers/window.h \
     headers/renderarea.h \
     headers/datagenerator.h \
-    headers/mypolygonf.h
+    headers/mercator.h
 
 INCLUDEPATH += \
     headers \
