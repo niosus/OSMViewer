@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QVector>
 
+#include "mercator.h"
+
 
 DataGenerator::DataGenerator(){}
 
@@ -38,7 +40,8 @@ void DataGenerator::storeNewNode(QXmlStreamReader *xmlReader)
     }
     if (id && lat && lon)
     {
-        QPointF point(lat, lon);
+        // QPointF point(lat, lon);
+        QPointF point(merc_x(lon), merc_y(lat));
         _nodes.insert(id, point);
     }
 }
@@ -67,22 +70,27 @@ void DataGenerator::updateBounds(QXmlStreamReader *xmlReader)
             maxLon = attr.value().toDouble();
         }
     }
-    if (minLat && minLon && maxLat && maxLon)
-    {
-        QVector<double> bounds;
+
+
+    if (minLat && minLon && maxLat && maxLon) {
+        QHash<QString, double> bounds;
+
         bounds.clear();
-        bounds.push_back(minLat);
-        bounds.push_back(minLon);
-        bounds.push_back(maxLat);
-        bounds.push_back(maxLon);
+        bounds["xMin"] = merc_x(minLon);
+        bounds["xMax"] = merc_x(maxLon);
+        bounds["yMin"] = merc_y(minLat);
+        bounds["yMax"] = merc_y(maxLat);
+
         emit boundariesUpdated(bounds);
+    } else {
+        qDebug() << "Could not read bounding box from osm file";
     }
 }
 
 void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
 {
     //We are going to fill this Polygon now
-    MyPolygonF polygon;
+    QPolygonF polygon;
     enum WayType {BUILDING, ROAD, PARKING, NONE};
     WayType wayType = WayType::NONE;
     //loop through everything that a way contains
@@ -156,7 +164,8 @@ void DataGenerator::getNodesAndWaysFromXml()
     _nodes.clear();
     _houses.clear();
     _roads.clear();
-    QFile *xmlFile = new QFile(":/maps/big_map.osm");
+    // QFile * xmlFile = new QFile("/home/stefan/other/downloads/freiburg.osm");
+    QFile * xmlFile = new QFile(":/maps/big_map.osm");
     if (!xmlFile->open(QIODevice::ReadOnly)) {
             QMessageBox::critical(new QWidget,"Load OSM File Problem",
             "Couldn't load map file",

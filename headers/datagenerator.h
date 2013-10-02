@@ -6,7 +6,7 @@
 #include <QVector>
 #include <QHash>
 #include <QXmlStreamReader>
-#include "mypolygonf.h"
+#include <QPolygonF>
 
 class DataGenerator: public QObject
 {
@@ -20,10 +20,10 @@ private:
     enum NODE_ATTRS {LONGITUDE, LATITUDE, ID};
 
     QHash<long, QPointF> _nodes;
-    QVector<MyPolygonF> _roads;
-    QVector<MyPolygonF> _houses;
-    QVector<MyPolygonF> _parkings;
-    QVector<MyPolygonF> _other;
+    QVector<QPolygonF> _roads;
+    QVector<QPolygonF> _houses;
+    QVector<QPolygonF> _parkings;
+    QVector<QPolygonF> _other;
 
     void getNodesAndWaysFromXml();
     void storeNewNode(QXmlStreamReader *xmlReader);
@@ -31,12 +31,12 @@ private:
     void storeNewWay(QXmlStreamReader *xmlReader);
 
 signals:
-    void boundariesUpdated(QVector<double> &bounds);
+    void boundariesUpdated(QHash<QString, double> &bounds);
     void dataGenerated(
-            QVector<MyPolygonF> &roads,
-            QVector<MyPolygonF> &houses,
-            QVector<MyPolygonF> &_parkings,
-            QVector<MyPolygonF> &_other);
+            QVector<QPolygonF> &roads,
+            QVector<QPolygonF> &houses,
+            QVector<QPolygonF> &_parkings,
+            QVector<QPolygonF> &_other);
 
 };
 
