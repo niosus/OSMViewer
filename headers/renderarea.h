@@ -1,13 +1,13 @@
 #ifndef RENDERAREA_H
 #define RENDERAREA_H
 
+#include <QHash>
 #include <QBrush>
 #include <QPen>
 #include <QPixmap>
 #include <QWidget>
-#include <vector>
-#include <mypolygonf.h>
 #include <QWheelEvent>
+#include <QPolygonF>
 
 
 //! [0]
@@ -18,42 +18,47 @@ class RenderArea : public QWidget
 public:
     RenderArea(QWidget *parent = 0);
 
-    QVector<double> _bounds;
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
-public slots:
-    void updateBounds(QVector<double> &bounds);
-    void receiveNewData(QVector<MyPolygonF> &roads,
-            QVector<MyPolygonF> &houses,
-            QVector<MyPolygonF> &parkings,
-            QVector<MyPolygonF> &other);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void wheelEvent(QWheelEvent *event);
 
+public slots:
+    void updateBounds(QHash<QString, double> &bounds);
+    void receiveNewData(QVector<QPolygonF> &roads,
+            QVector<QPolygonF> &houses,
+            QVector<QPolygonF> &parkings,
+            QVector<QPolygonF> &other);
 
 protected:
     void paintEvent(QPaintEvent *event);
 
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
 private:
-    QVector<MyPolygonF> _roads;
-    QVector<MyPolygonF> _houses;
-    QVector<MyPolygonF> _parkings;
-    QVector<MyPolygonF> _other;
+    QVector<QPolygonF> _roads;
+    QVector<QPolygonF> _houses;
+    QVector<QPolygonF> _parkings;
+    QVector<QPolygonF> _other;
 
-    bool _dragging;
-    QPointF _startDragPoint;
-    QPointF _dragTranslation;
-    float _scaleValue;
-    void drawRoads();
-    void drawHouses();
-    void drawParkings();
-    void drawOther();
+    QHash<QString, double> _bounds;
 
-    QTransform _worldToView;
+    QTransform worldToView;
+    QPoint mouseMoveLast;
+
+    void drawRoads(QPainter & painter);
+    void drawHouses(QPainter & painter);
+    void drawParkings(QPainter & painter);
+    void drawOther(QPainter & painter);
+
+    void drawRuler(QPainter & painter);
+
+    // pen size that is drawn with a width of 1px
+    // under the worldToView transformation
+    double hairLineWidth();
+
 };
 
 #endif
