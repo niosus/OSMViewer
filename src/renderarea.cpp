@@ -177,7 +177,7 @@ void RenderArea::drawParkings(QPainter & painter)
 
     QPen pen(QColor(0,200,10));
     pen.setCapStyle(Qt::RoundCap);
-    pen.setWidthF(10 * this->hairLineWidth());
+    pen.setWidthF(this->hairLineWidth());
     painter.setPen(pen);
 
     painter.setBrush(QColor(0,200,10));
