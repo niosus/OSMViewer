@@ -127,7 +127,7 @@ void RenderArea::updateBounds(QHash<QString, double> &bounds)
     this->worldToView.scale(1., -1.);
 
     // 2. Normalize ( " / worldSize " ) then stretch to fill canvas ("canvasSize ")
-    this->worldToView.scale(canvasSize / worldSize, - canvasSize / worldSize);
+    this->worldToView.scale(canvasSize / worldSize, canvasSize / worldSize);
 
     // 1. Center the map
     this->worldToView.translate(- worldCenter.x(), - worldCenter.y());
