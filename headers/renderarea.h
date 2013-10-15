@@ -29,6 +29,7 @@ public slots:
             QVector<QPolygonF> &houses,
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);
+    void receiveNewCars(QVector<QPointF> &cars);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -39,6 +40,7 @@ protected:
 
 private:
     QVector<QPolygonF> _roads;
+    QVector<QPointF> _cars;
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
@@ -51,6 +53,7 @@ private:
     void drawRoads(QPainter & painter);
     void drawHouses(QPainter & painter);
     void drawParkings(QPainter & painter);
+    void drawCars(QPainter & painter);
     void drawOther(QPainter & painter);
 
     void drawRuler(QPainter & painter);

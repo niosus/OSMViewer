@@ -91,6 +91,12 @@ void RenderArea::receiveNewData(
     update();
 }
 
+void RenderArea::receiveNewCars(QVector<QPointF> &cars)
+{
+    this->_cars = cars;
+    update();
+}
+
 void RenderArea::updateBounds(QHash<QString, double> &bounds)
 {
     _bounds = bounds;
@@ -153,6 +159,27 @@ void RenderArea::drawRoads(QPainter & painter)
     painter.restore();
 }
 
+void RenderArea::drawCars(QPainter & painter)
+{
+    painter.save();
+
+    QPen pen(QColor(160,160,240));
+    pen.setCapStyle(Qt::RoundCap);
+
+    pen.setWidthF(0);
+    painter.setPen(pen);
+
+    painter.setBrush(Qt::SolidPattern);
+
+    for (QPointF car : _cars)
+    {
+        painter.drawPoint(car);
+    }
+
+    painter.restore();
+}
+
+
 void RenderArea::drawHouses(QPainter & painter)
 {
     painter.save();
@@ -177,12 +204,12 @@ void RenderArea::drawParkings(QPainter & painter)
 
     QPen pen(QColor(0,200,10));
     pen.setCapStyle(Qt::RoundCap);
-    pen.setWidthF(this->hairLineWidth());
+    pen.setWidthF(1);
     painter.setPen(pen);
 
     painter.setBrush(QColor(0,200,10));
 
-    painter.setOpacity(0.8);
+    painter.setOpacity(0.5);
 
     for (QPolygonF parking : _parkings)
     {
