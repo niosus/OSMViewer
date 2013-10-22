@@ -34,6 +34,9 @@ Window::Window()
     QObject::connect(
                 dataGenerator, SIGNAL(boundariesUpdated(QHash<QString, double>&)),
                 renderArea, SLOT(updateBounds(QHash<QString, double>&)));
+    QObject::connect(
+                dataGenerator, SIGNAL(carsGenerated(QVector<QPointF>&)),
+                renderArea, SLOT(receiveNewCars(QVector<QPointF>&)));
     dataGenerator->generateData();
 }
 

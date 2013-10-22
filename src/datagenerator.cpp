@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QVector>
+#include <cmath>
 
 #include "mercator.h"
 
@@ -14,7 +15,108 @@ DataGenerator::DataGenerator(){}
 void DataGenerator::generateData()
 {
     getNodesAndWaysFromXml();
+    getCarsFromLogFiles();
     emit dataGenerated(_roads, _houses, _parkings, _other);
+    emit carsGenerated(_cars);
+}
+
+void DataGenerator::getCarsFromLogFiles()
+{
+    QFile * logImagesGps = new QFile(":/log/log_images_gps.txt");
+    QFile * logImagesRects = new QFile(":/log/output_log.dat");
+    if (!logImagesGps->open(QIODevice::ReadOnly)
+            || !logImagesRects->open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(new QWidget,"No Log File",
+        "log file does not exist",
+        QMessageBox::Ok);
+        return;
+    }
+    QMap<QString, QPointF> imageGpsHash;
+    QMap<QString, QRectF> imageCarRectHash;
+
+    QTextStream inGps(logImagesGps);
+    while(!inGps.atEnd()) {
+        QString line = inGps.readLine();
+        QStringList fields = line.split("\t\t");
+        QString name = fields[1].split("=")[1];
+        float lon = fields[2].split("=")[1].toFloat();
+        float lat = fields[3].split("=")[1].toFloat();
+        imageGpsHash[name]=QPointF(lon,lat);
+    }
+
+    QTextStream inRects(logImagesRects);
+    while(!inRects.atEnd()) {
+        QString line = inRects.readLine();
+        QStringList fields = line.split("\t");
+        QString name = fields[1];
+        float x = fields[3].toFloat();
+        float y = fields[4].toFloat();
+        float width = fields[6].toFloat();
+        float height = fields[7].toFloat();
+        imageCarRectHash[name]=QRectF(x,y, width, height);
+    }
+    getCarPositionsFromAllData(imageCarRectHash, imageGpsHash);
+
+    logImagesGps->close();
+    logImagesRects->close();
+    delete logImagesGps;
+    delete logImagesRects;
+}
+
+QPointF DataGenerator::getPrevGpsPoint(const QString &name, const QMap<QString, QPointF> &imageGpsHash)
+{
+    QMap<QString, QPointF>::const_iterator pointIter;
+    pointIter = imageGpsHash.find(name);
+    if (pointIter==imageGpsHash.end())
+    {
+        return QPointF();
+    }
+    QPointF refPoint = *pointIter;
+    while (pointIter!=imageGpsHash.begin() && *pointIter == refPoint)
+    {
+        pointIter--;
+    }
+    return *pointIter;
+}
+
+
+void DataGenerator::getCarPositionsFromAllData(
+        const QMap<QString, QRectF> &imageCarRectHash,
+        const QMap<QString, QPointF> &imageGpsHash)
+{
+    const float gradInPx = 0.13f;
+    const float f = -14.85f;
+    const float objectSize = 1.6f;
+    _cars.clear();
+    for (auto name:imageCarRectHash.keys())
+    {
+        QRectF carRect = imageCarRectHash.value(name);
+        QPointF carRectCenter = QPointF(
+                    carRect.x() + carRect.width()/2,
+                    carRect.y() + carRect.height()/2);
+        qDebug()<<"car center on image" << carRectCenter;
+        float distanceFromCamera = (-carRect.height() * objectSize)/f;
+        qDebug()<<"car distance from camera" << distanceFromCamera;
+        float carAnglePos = 90.0f - carRectCenter.x()*gradInPx;
+        qDebug()<<"car angle from center" << distanceFromCamera;
+        carAnglePos = carAnglePos * M_PI / 180.0;
+        float carX = distanceFromCamera * cos(carAnglePos);
+        float carY = distanceFromCamera * sin(carAnglePos);
+        QPointF carInCameraViewPosition(carX, carY);
+        qDebug()<<"car in camera" << carInCameraViewPosition;
+
+        QPointF thisPoint = imageGpsHash.value(name);
+        QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
+        QPointF direction = thisPoint - prevPoint;
+        float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x());
+        QTransform transform;
+        transform.translate(merc_x(thisPoint.x()), merc_y(thisPoint.y()));
+        transform.rotate(angleOfThisGpsPointSystem);
+        QPointF carGlobalPos = transform.map(carInCameraViewPosition);
+        qDebug() << carGlobalPos;
+        _cars.push_back(carGlobalPos);
+    }
 }
 
 void DataGenerator::storeNewNode(QXmlStreamReader *xmlReader)
@@ -165,7 +267,7 @@ void DataGenerator::getNodesAndWaysFromXml()
     _houses.clear();
     _roads.clear();
     // QFile * xmlFile = new QFile("/home/stefan/other/downloads/freiburg.osm");
-    QFile * xmlFile = new QFile(":/maps/big_map.osm");
+    QFile * xmlFile = new QFile(":/maps/stuhlinger.osm");
     if (!xmlFile->open(QIODevice::ReadOnly)) {
             QMessageBox::critical(new QWidget,"Load OSM File Problem",
             "Couldn't load map file",

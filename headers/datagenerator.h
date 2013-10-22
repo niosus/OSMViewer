@@ -24,8 +24,16 @@ private:
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
+    QVector<QPointF> _cars;
 
     void getNodesAndWaysFromXml();
+    void getCarsFromLogFiles();
+    void getCarPositionsFromAllData(
+            const QMap<QString, QRectF> &imageCarRectHash,
+            const QMap<QString, QPointF> &imageGpsHash);
+    QPointF getPrevGpsPoint(
+            const QString &name,
+            const QMap<QString, QPointF> &imageGpsHash);
     void storeNewNode(QXmlStreamReader *xmlReader);
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);
@@ -35,8 +43,9 @@ signals:
     void dataGenerated(
             QVector<QPolygonF> &roads,
             QVector<QPolygonF> &houses,
-            QVector<QPolygonF> &_parkings,
-            QVector<QPolygonF> &_other);
+            QVector<QPolygonF> &parkings,
+            QVector<QPolygonF> &other);
+    void carsGenerated(QVector<QPointF> &cars);
 
 };
 

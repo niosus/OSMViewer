@@ -143,10 +143,11 @@ void RenderArea::drawRoads(QPainter & painter)
 {
     painter.save();
 
-    QPen pen(QColor(160,160,240));
+    QPen pen(QColor(100,50,240));
     pen.setCapStyle(Qt::RoundCap);
 
-    pen.setWidthF(0);
+    pen.setWidthF(3);
+    painter.setOpacity(0.6);
     painter.setPen(pen);
 
     painter.setBrush(Qt::SolidPattern);
@@ -163,13 +164,11 @@ void RenderArea::drawCars(QPainter & painter)
 {
     painter.save();
 
-    QPen pen(QColor(160,160,240));
+    QPen pen(QColor(255,100,100));
     pen.setCapStyle(Qt::RoundCap);
 
-    pen.setWidthF(0);
+    pen.setWidthF(10);
     painter.setPen(pen);
-
-    painter.setBrush(Qt::SolidPattern);
 
     for (QPointF car : _cars)
     {
@@ -247,7 +246,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     drawRoads(painter);
     drawHouses(painter);
     drawOther(painter);
-
+    drawCars(painter);
     // draw on map
     painter.setWorldTransform(QTransform());
     drawRuler(painter);

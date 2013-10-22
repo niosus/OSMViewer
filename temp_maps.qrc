@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>maps/map_test.osm</file>
         <file>maps/big_map.osm</file>
+        <file>log/log_images_gps.txt</file>
+        <file>log/output_log.dat</file>
+        <file>maps/stuhlinger.osm</file>
     </qresource>
 </RCC>
