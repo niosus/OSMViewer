@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QVector>
+#include <QVector3D>
 #include <cmath>
 
 #include "mercator.h"
@@ -18,12 +19,13 @@ void DataGenerator::generateData()
     getCarsFromLogFiles();
     emit dataGenerated(_roads, _houses, _parkings, _other);
     emit carsGenerated(_cars);
+    emit pathGenerated(_path);
 }
 
 void DataGenerator::getCarsFromLogFiles()
 {
-    QFile * logImagesGps = new QFile(":/log/log_images_gps.txt");
-    QFile * logImagesRects = new QFile(":/log/output_log.dat");
+    QFile * logImagesGps = new QFile(":/log/log_images_gps_freiburg.txt");
+    QFile * logImagesRects = new QFile(":/log/log.dat");
     if (!logImagesGps->open(QIODevice::ReadOnly)
             || !logImagesRects->open(QIODevice::ReadOnly))
     {
@@ -33,7 +35,7 @@ void DataGenerator::getCarsFromLogFiles()
         return;
     }
     QMap<QString, QPointF> imageGpsHash;
-    QMap<QString, QRectF> imageCarRectHash;
+    QMap<QString, QVector<QVector3D> > carPosHash;
 
     QTextStream inGps(logImagesGps);
     while(!inGps.atEnd()) {
@@ -43,20 +45,20 @@ void DataGenerator::getCarsFromLogFiles()
         float lon = fields[2].split("=")[1].toFloat();
         float lat = fields[3].split("=")[1].toFloat();
         imageGpsHash[name]=QPointF(lon,lat);
+//        _path.append(QPointF(merc_x(lon), merc_y(lat)));
     }
 
     QTextStream inRects(logImagesRects);
     while(!inRects.atEnd()) {
         QString line = inRects.readLine();
         QStringList fields = line.split("\t");
-        QString name = fields[1];
-        float x = fields[3].toFloat();
-        float y = fields[4].toFloat();
-        float width = fields[6].toFloat();
-        float height = fields[7].toFloat();
-        imageCarRectHash[name]=QRectF(x,y, width, height);
+        QString name = fields[0].split(":")[1];
+        float x = fields[1].split(":")[1].toFloat();
+        float y = fields[2].split(":")[1].toFloat();
+        float z = fields[3].split(":")[1].toFloat();
+        carPosHash[name].append(QVector3D(x, y, z));
     }
-    getCarPositionsFromAllData(imageCarRectHash, imageGpsHash);
+    getCarPositionsFromAllData(carPosHash, imageGpsHash);
 
     logImagesGps->close();
     logImagesRects->close();
@@ -82,40 +84,30 @@ QPointF DataGenerator::getPrevGpsPoint(const QString &name, const QMap<QString, 
 
 
 void DataGenerator::getCarPositionsFromAllData(
-        const QMap<QString, QRectF> &imageCarRectHash,
+        const QMap<QString, QVector<QVector3D>> &carPosHash,
         const QMap<QString, QPointF> &imageGpsHash)
 {
-    const float gradInPx = 0.13f;
-    const float f = -14.85f;
-    const float objectSize = 1.6f;
     _cars.clear();
-    for (auto name:imageCarRectHash.keys())
+    for (auto name:carPosHash.keys())
     {
-        QRectF carRect = imageCarRectHash.value(name);
-        QPointF carRectCenter = QPointF(
-                    carRect.x() + carRect.width()/2,
-                    carRect.y() + carRect.height()/2);
-        qDebug()<<"car center on image" << carRectCenter;
-        float distanceFromCamera = (-carRect.height() * objectSize)/f;
-        qDebug()<<"car distance from camera" << distanceFromCamera;
-        float carAnglePos = 90.0f - carRectCenter.x()*gradInPx;
-        qDebug()<<"car angle from center" << distanceFromCamera;
-        carAnglePos = carAnglePos * M_PI / 180.0;
-        float carX = distanceFromCamera * cos(carAnglePos);
-        float carY = distanceFromCamera * sin(carAnglePos);
-        QPointF carInCameraViewPosition(carX, carY);
-        qDebug()<<"car in camera" << carInCameraViewPosition;
+        QVector<QVector3D> carPositions = carPosHash.value(name);
+        for (auto carPos: carPositions)
+        {
+            QPointF carInCameraViewPosition(carPos.z(), carPos.x());
 
-        QPointF thisPoint = imageGpsHash.value(name);
-        QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
-        QPointF direction = thisPoint - prevPoint;
-        float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x());
-        QTransform transform;
-        transform.translate(merc_x(thisPoint.x()), merc_y(thisPoint.y()));
-        transform.rotate(angleOfThisGpsPointSystem);
-        QPointF carGlobalPos = transform.map(carInCameraViewPosition);
-        qDebug() << carGlobalPos;
-        _cars.push_back(carGlobalPos);
+            QPointF thisPoint = imageGpsHash.value(name);
+            QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
+            QPointF direction = thisPoint - prevPoint;
+            float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x()) * 180 / M_PI;
+            QTransform transform;
+            transform.translate(merc_x(thisPoint.x()), merc_y(thisPoint.y()));
+            transform.rotate(angleOfThisGpsPointSystem);
+            transform.rotate(-90);
+            QPointF carGlobalPos = transform.map(carInCameraViewPosition);
+            _cars.push_back(carGlobalPos);
+            _path.append(QPointF(merc_x(prevPoint.x()), merc_y(prevPoint.y())));
+            _path.append(QPointF(merc_x(thisPoint.x()), merc_y(thisPoint.y())));
+        }
     }
 }
 

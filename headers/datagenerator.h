@@ -25,11 +25,11 @@ private:
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
     QVector<QPointF> _cars;
+    QPolygonF _path;
 
     void getNodesAndWaysFromXml();
     void getCarsFromLogFiles();
-    void getCarPositionsFromAllData(
-            const QMap<QString, QRectF> &imageCarRectHash,
+    void getCarPositionsFromAllData(const QMap<QString, QVector<QVector3D> > &carPosHash,
             const QMap<QString, QPointF> &imageGpsHash);
     QPointF getPrevGpsPoint(
             const QString &name,
@@ -46,6 +46,7 @@ signals:
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);
     void carsGenerated(QVector<QPointF> &cars);
+    void pathGenerated(QPolygonF &path);
 
 };
 

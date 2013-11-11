@@ -97,6 +97,12 @@ void RenderArea::receiveNewCars(QVector<QPointF> &cars)
     update();
 }
 
+void RenderArea::receiveNewPath(QPolygonF &path)
+{
+    this->_path = path;
+    update();
+}
+
 void RenderArea::updateBounds(QHash<QString, double> &bounds)
 {
     _bounds = bounds;
@@ -160,14 +166,51 @@ void RenderArea::drawRoads(QPainter & painter)
     painter.restore();
 }
 
+void RenderArea::drawCameraPos(QPainter & painter)
+{
+    painter.save();
+
+    QPen pen(QColor(250,50,150));
+    pen.setCapStyle(Qt::RoundCap);
+
+    pen.setWidthF(2);
+    painter.setOpacity(1);
+    painter.setPen(pen);
+
+    painter.setBrush(Qt::SolidPattern);
+
+    painter.drawPoints(_path);
+
+    painter.restore();
+}
+
+
+void RenderArea::drawPath(QPainter & painter)
+{
+    painter.save();
+
+    QPen pen(QColor(0,50,250));
+    pen.setCapStyle(Qt::RoundCap);
+
+    pen.setWidthF(1);
+    painter.setOpacity(0.5);
+    painter.setPen(pen);
+
+    painter.setBrush(Qt::SolidPattern);
+    painter.drawPoints(_path);
+
+    painter.restore();
+}
+
 void RenderArea::drawCars(QPainter & painter)
 {
     painter.save();
 
-    QPen pen(QColor(255,100,100));
+    QPen pen(QColor(255,0,0));
     pen.setCapStyle(Qt::RoundCap);
 
-    pen.setWidthF(10);
+    painter.setOpacity(0.5);
+    pen.setWidthF(1);
     painter.setPen(pen);
 
     for (QPointF car : _cars)
@@ -247,6 +290,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     drawHouses(painter);
     drawOther(painter);
     drawCars(painter);
+    drawPath(painter);
     // draw on map
     painter.setWorldTransform(QTransform());
     drawRuler(painter);

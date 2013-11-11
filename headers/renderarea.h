@@ -30,6 +30,7 @@ public slots:
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);
     void receiveNewCars(QVector<QPointF> &cars);
+    void receiveNewPath(QPolygonF &path);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -44,6 +45,7 @@ private:
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
+    QPolygonF _path;
 
     QHash<QString, double> _bounds;
 
@@ -54,6 +56,8 @@ private:
     void drawHouses(QPainter & painter);
     void drawParkings(QPainter & painter);
     void drawCars(QPainter & painter);
+    void drawPath(QPainter & painter);
+    void drawCameraPos(QPainter & painter);
     void drawOther(QPainter & painter);
 
     void drawRuler(QPainter & painter);

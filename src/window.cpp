@@ -37,6 +37,9 @@ Window::Window()
     QObject::connect(
                 dataGenerator, SIGNAL(carsGenerated(QVector<QPointF>&)),
                 renderArea, SLOT(receiveNewCars(QVector<QPointF>&)));
+    QObject::connect(
+                dataGenerator, SIGNAL(pathGenerated(QPolygonF&)),
+                renderArea, SLOT(receiveNewPath(QPolygonF&)));
     dataGenerator->generateData();
 }
 
