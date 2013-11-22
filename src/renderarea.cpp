@@ -91,6 +91,15 @@ void RenderArea::receiveNewData(
     update();
 }
 
+void RenderArea::receiveGrid(OccupancyGrid& grid)
+{
+    int minX, maxX, minY, maxY;
+    grid.getBounds(minX, maxX, minY, maxY);
+    qDebug()<<"bounds received"<< minX << maxX << minY << maxY;
+    this->_grid = OccupancyGrid(grid);
+    update();
+}
+
 void RenderArea::receiveNewCars(QVector<QPointF> &cars)
 {
     this->_cars = cars;
@@ -222,6 +231,36 @@ void RenderArea::drawCars(QPainter & painter)
 }
 
 
+void RenderArea::drawOccupancyGrid(QPainter & painter)
+{
+    painter.save();
+
+    QPen pen(QColor(255,0,0));
+    pen.setCapStyle(Qt::RoundCap);
+
+    painter.setOpacity(0.5);
+    pen.setWidthF(1);
+    painter.setPen(pen);
+
+    int minX, maxX, minY, maxY;
+    _grid.getBounds(minX, maxX, minY, maxY);
+    qDebug()<<"bounds draw"<< minX << maxX << minY << maxY;
+    for (int x = minX; x <= maxX; ++x)
+    {
+        for (int y = minY; y <= maxY; ++y)
+        {
+            qreal prob = _grid.getCellProbability(QPoint(x, y));
+            if (prob < 0) painter.setOpacity(0.5);
+            else painter.setOpacity(prob);
+            painter.drawPoint(x, y);
+            qDebug()<<"DRAWING!!!!";
+        }
+    }
+
+    painter.restore();
+}
+
+
 void RenderArea::drawHouses(QPainter & painter)
 {
     painter.save();
@@ -285,12 +324,13 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 
     // draw world
     painter.setWorldTransform(this->worldToView);
-    drawParkings(painter);
+//    drawParkings(painter);
     drawRoads(painter);
     drawHouses(painter);
     drawOther(painter);
-    drawCars(painter);
-    drawPath(painter);
+//    drawCars(painter);
+//    drawPath(painter);
+    drawOccupancyGrid(painter);
     // draw on map
     painter.setWorldTransform(QTransform());
     drawRuler(painter);

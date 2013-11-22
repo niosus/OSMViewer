@@ -1,4 +1,5 @@
 #include "datagenerator.h"
+#include "kmlwriter.h"
 #include <QFile>
 #include <QXmlStreamReader>
 #include <QXmlStreamAttributes>
@@ -20,6 +21,8 @@ void DataGenerator::generateData()
     emit dataGenerated(_roads, _houses, _parkings, _other);
     emit carsGenerated(_cars);
     emit pathGenerated(_path);
+    emit gridGenerated(_grid);
+    writeTestKml();
 }
 
 void DataGenerator::getCarsFromLogFiles()
@@ -88,27 +91,37 @@ void DataGenerator::getCarPositionsFromAllData(
         const QMap<QString, QPointF> &imageGpsHash)
 {
     _cars.clear();
+    KmlWriter *kmlWriter = new KmlWriter();
     for (auto name:carPosHash.keys())
     {
+        QPointF thisPoint = imageGpsHash.value(name);
+        QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
+        QPointF direction = thisPoint - prevPoint;
+        float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x()) * 180 / M_PI;
         QVector<QVector3D> carPositions = carPosHash.value(name);
+        QVector<QPointF> carCorrectPositions;
         for (auto carPos: carPositions)
         {
             QPointF carInCameraViewPosition(carPos.z(), carPos.x());
-
-            QPointF thisPoint = imageGpsHash.value(name);
-            QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
-            QPointF direction = thisPoint - prevPoint;
-            float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x()) * 180 / M_PI;
             QTransform transform;
             transform.translate(merc_x(thisPoint.x()), merc_y(thisPoint.y()));
             transform.rotate(angleOfThisGpsPointSystem);
             transform.rotate(-90);
             QPointF carGlobalPos = transform.map(carInCameraViewPosition);
             _cars.push_back(carGlobalPos);
+            carCorrectPositions.push_back(carGlobalPos);
+            kmlWriter->addPoint(0, name, QPointF(
+                                    merc_lon(carGlobalPos.x()),
+                                    merc_lat(carGlobalPos.y())));
             _path.append(QPointF(merc_x(prevPoint.x()), merc_y(prevPoint.y())));
             _path.append(QPointF(merc_x(thisPoint.x()), merc_y(thisPoint.y())));
         }
+        _grid.updateOccupancy(QPointF(
+                                  merc_x(thisPoint.x()),
+                                  merc_y(thisPoint.y())),
+                              carCorrectPositions);
     }
+    delete kmlWriter;
 }
 
 void DataGenerator::storeNewNode(QXmlStreamReader *xmlReader)

@@ -40,6 +40,9 @@ Window::Window()
     QObject::connect(
                 dataGenerator, SIGNAL(pathGenerated(QPolygonF&)),
                 renderArea, SLOT(receiveNewPath(QPolygonF&)));
+    QObject::connect(
+                dataGenerator, SIGNAL(gridGenerated(OccupancyGrid&)),
+                renderArea, SLOT(receiveGrid(OccupancyGrid&)));
     dataGenerator->generateData();
 }
 

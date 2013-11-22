@@ -17,13 +17,17 @@ SOURCES += src/main.cpp \
     src/window.cpp \
     src/renderarea.cpp \
     src/datagenerator.cpp \
-    src/mercator.cpp
+    src/mercator.cpp \
+    src/kmlwriter.cpp \
+    src/occupancygrid.cpp
 
 HEADERS  += \
     headers/window.h \
     headers/renderarea.h \
     headers/datagenerator.h \
-    headers/mercator.h
+    headers/mercator.h \
+    headers/kmlwriter.h \
+    headers/occupancygrid.h
 
 INCLUDEPATH += \
     headers \
@@ -33,3 +37,7 @@ FORMS    +=
 
 RESOURCES += \
     temp_maps.qrc
+
+INCLUDEPATH += /usr/include
+
+LIBS += -L/usr/lib -lkmlbase -lkmldom

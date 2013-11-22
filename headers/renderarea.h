@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QWheelEvent>
 #include <QPolygonF>
+#include "occupancygrid.h"
 
 
 //! [0]
@@ -31,6 +32,7 @@ public slots:
             QVector<QPolygonF> &other);
     void receiveNewCars(QVector<QPointF> &cars);
     void receiveNewPath(QPolygonF &path);
+    void receiveGrid(OccupancyGrid &grid);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -46,6 +48,7 @@ private:
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
     QPolygonF _path;
+    OccupancyGrid _grid;
 
     QHash<QString, double> _bounds;
 
@@ -59,6 +62,7 @@ private:
     void drawPath(QPainter & painter);
     void drawCameraPos(QPainter & painter);
     void drawOther(QPainter & painter);
+    void drawOccupancyGrid(QPainter & painter);
 
     void drawRuler(QPainter & painter);
 

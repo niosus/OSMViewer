@@ -7,6 +7,8 @@
 #include <QHash>
 #include <QXmlStreamReader>
 #include <QPolygonF>
+#include "kmlwriter.h"
+#include "occupancygrid.h"
 
 class DataGenerator: public QObject
 {
@@ -26,6 +28,7 @@ private:
     QVector<QPolygonF> _other;
     QVector<QPointF> _cars;
     QPolygonF _path;
+    OccupancyGrid _grid;
 
     void getNodesAndWaysFromXml();
     void getCarsFromLogFiles();
@@ -47,6 +50,7 @@ signals:
             QVector<QPolygonF> &other);
     void carsGenerated(QVector<QPointF> &cars);
     void pathGenerated(QPolygonF &path);
+    void gridGenerated(OccupancyGrid& grid);
 
 };
 
