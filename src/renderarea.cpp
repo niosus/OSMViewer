@@ -236,24 +236,21 @@ void RenderArea::drawOccupancyGrid(QPainter & painter)
     painter.save();
 
     QPen pen(QColor(255,0,0));
-    pen.setCapStyle(Qt::RoundCap);
+    pen.setCapStyle(Qt::SquareCap);
 
     painter.setOpacity(0.5);
-    pen.setWidthF(1);
+    pen.setWidthF(_grid.getCellWidth());
     painter.setPen(pen);
 
     int minX, maxX, minY, maxY;
     _grid.getBounds(minX, maxX, minY, maxY);
-    qDebug()<<"bounds draw"<< minX << maxX << minY << maxY;
-    for (int x = minX; x <= maxX; ++x)
+    for (qreal x = minX; x <= maxX; x+=_grid.getCellWidth())
     {
-        for (int y = minY; y <= maxY; ++y)
+        for (qreal y = minY; y <= maxY; y+=_grid.getCellWidth())
         {
-            qreal prob = _grid.getCellProbability(QPoint(x, y));
-            if (prob < 0) painter.setOpacity(0.5);
-            else painter.setOpacity(prob);
+            qreal prob = _grid.getCellProbability(QPointF(x, y));
+            painter.setOpacity(prob);
             painter.drawPoint(x, y);
-            qDebug()<<"DRAWING!!!!";
         }
     }
 

@@ -3,6 +3,18 @@
 #include <QDebug>
 using namespace std;
 
+qreal constexpr OccupancyGrid::PRIOR;
+
+qreal toLogOdds(const qreal& prob)
+{
+    return log(prob/(1 - prob));
+}
+
+qreal fromLogOdds(const qreal& logOdds)
+{
+    return 1 - 1 / (1 + exp(logOdds));
+}
+
 void OccupancyGrid::updateMinMaxVals(const QPoint& cell,
                       int& minX, int& maxX,
                       int& minY, int& maxY)
@@ -28,18 +40,16 @@ void OccupancyGrid::getBounds(int &minX, int &maxX,
     maxY = _maxY * CELL_WIDTH;
 }
 
-
 void OccupancyGrid::updateOccupancy(
         const QPointF& cameraPosition,
-        const QVector<QPointF>& carPositions)
+        const QVector<QPointF>& carPositions,
+        const bool& allFree)
 {
-    qDebug()<<"update Occupancy"<<cameraPosition.x()<<cameraPosition.y();
     int minX = INT_MAX;
     int maxX = INT_MIN;
     int minY = INT_MAX;
     int maxY = INT_MIN;
     QPoint cameraCell = findCell(cameraPosition);
-    qDebug()<<"here"<<cameraCell;
     updateMinMaxVals(cameraCell, minX, maxX, minY, maxY);
     QVector<QPoint> carCells;
     for (const auto& carPos: carPositions)
@@ -48,43 +58,39 @@ void OccupancyGrid::updateOccupancy(
         carCells.push_back(cell);
         updateMinMaxVals(cell, minX, maxX, minY, maxY);
     }
-    qDebug()<<"bounds"<< minX << maxX << minY << maxY;
     // update all values in rect from min to max
     for (int x = minX; x <= maxX; ++x)
     {
         for (int y = minY; y <= maxY; ++y)
         {
-            qDebug()<<x<<y;
             QPoint temp = QPoint(x,y);
-            if (!carCells.contains(temp))
+            if (allFree || !carCells.contains(temp))
             {
-                qDebug()<<"updating FREE";
                 updateCellProbability(temp, FREE);
             }
             else
             {
-                qDebug()<<"updating OCCUPIED";
                 updateCellProbability(temp, OCCUPIED);
             }
         }
     }
-    qDebug()<<"done";
 }
 
-// returns -1 if no such cell, or probability otherwise
-qreal OccupancyGrid::getCellProbability(const QPoint& cell)
+// returns PRIOR if no such cell, or probability otherwise
+qreal OccupancyGrid::getCellProbability(const QPointF& cell)
 {
-    QHash<int, QHash<int, qreal> >::const_iterator iterX = _grid.find(cell.x() / CELL_WIDTH);
+    QHash<int, QHash<int, qreal> >::const_iterator iterX =
+            _grid.find(cell.x() / CELL_WIDTH);
     QHash<int, qreal>::const_iterator iterY;
     if (iterX != _grid.end())
     {
         iterY = iterX.value().find(cell.y() / CELL_WIDTH);
         if (iterY != iterX.value().end())
         {
-            return iterY.value();
+            return fromLogOdds(iterY.value());
         }
     }
-    return -1;
+    return PRIOR;
 }
 
 QPoint OccupancyGrid::findCell(const QPointF& position)
@@ -116,8 +122,12 @@ void OccupancyGrid::updateCellProbability(
         prob = OCCUPIED_UPDATE_PROB;
         break;
     }
-    qreal val = prob + _grid[x][y] - PRIOR < 0;
-    val = (val<0)?0:val;
-    _grid[x][y] = val;
+    if (_grid[x][y] == 0) _grid[x][y] = toLogOdds(0.5);
+    _grid[x][y] = toLogOdds(prob) + _grid[x][y] - toLogOdds(PRIOR);
+}
+
+qreal OccupancyGrid::getCellWidth() const
+{
+    return CELL_WIDTH;
 }
 

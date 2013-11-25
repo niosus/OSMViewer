@@ -19,7 +19,8 @@ SOURCES += src/main.cpp \
     src/datagenerator.cpp \
     src/mercator.cpp \
     src/kmlwriter.cpp \
-    src/occupancygrid.cpp
+    src/occupancygrid.cpp \
+    src/occupancy_test.cpp
 
 HEADERS  += \
     headers/window.h \
@@ -27,7 +28,8 @@ HEADERS  += \
     headers/datagenerator.h \
     headers/mercator.h \
     headers/kmlwriter.h \
-    headers/occupancygrid.h
+    headers/occupancygrid.h \
+    headers/occupancy_test.h
 
 INCLUDEPATH += \
     headers \
@@ -41,3 +43,5 @@ RESOURCES += \
 INCLUDEPATH += /usr/include
 
 LIBS += -L/usr/lib -lkmlbase -lkmldom
+
+CONFIG += qtestlib

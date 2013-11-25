@@ -40,6 +40,10 @@ private:
     void storeNewNode(QXmlStreamReader *xmlReader);
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);
+    void updateOccupancy(const QPointF& thisPointInMeters,
+            const float &angleOfThisGpsPointSystem,
+            QVector<QVector3D> &carPositions,
+            KmlWriter *kmlWriter, const QString &name);
 
 signals:
     void boundariesUpdated(QHash<QString, double> &bounds);

@@ -12,7 +12,9 @@
 #include "mercator.h"
 
 
-DataGenerator::DataGenerator(){}
+DataGenerator::DataGenerator(){
+    _grid.setCellWidth(1);
+}
 
 void DataGenerator::generateData()
 {
@@ -40,6 +42,7 @@ void DataGenerator::getCarsFromLogFiles()
     QMap<QString, QPointF> imageGpsHash;
     QMap<QString, QVector<QVector3D> > carPosHash;
 
+    // reading in all images
     QTextStream inGps(logImagesGps);
     while(!inGps.atEnd()) {
         QString line = inGps.readLine();
@@ -51,6 +54,7 @@ void DataGenerator::getCarsFromLogFiles()
 //        _path.append(QPointF(merc_x(lon), merc_y(lat)));
     }
 
+    // read in all detected cars' rects
     QTextStream inRects(logImagesRects);
     while(!inRects.atEnd()) {
         QString line = inRects.readLine();
@@ -85,6 +89,44 @@ QPointF DataGenerator::getPrevGpsPoint(const QString &name, const QMap<QString, 
     return *pointIter;
 }
 
+void DataGenerator::updateOccupancy(const QPointF& thisPointInMeters,
+        const float &angleOfThisGpsPointSystem,
+        QVector<QVector3D>& carPositions,
+        KmlWriter* kmlWriter,
+        const QString &name)
+{
+    QVector<QPointF> carCorrectPositions;
+    bool allFree = false;
+    if (carPositions.isEmpty())
+    {
+        allFree = true;
+        carPositions.push_back(QVector3D(-5, 0, 20));
+        carPositions.push_back(QVector3D(5, 0, 20));
+    }
+    for (auto carPos: carPositions)
+    {
+        QPointF carInCameraViewPosition(carPos.z(), carPos.x());
+        if (sqrt(QPointF::dotProduct(carInCameraViewPosition, carInCameraViewPosition)) > 30)
+        {
+            continue;
+        }
+        QTransform transform;
+        transform.translate(thisPointInMeters.x(), thisPointInMeters.y());
+        transform.rotate(angleOfThisGpsPointSystem);
+        transform.rotate(-90);
+        QPointF carGlobalPos = transform.map(carInCameraViewPosition);
+        carCorrectPositions.push_back(carGlobalPos);
+        if (allFree) continue;
+        _cars.push_back(carGlobalPos);
+        kmlWriter->addPoint(0, name,
+                            QPointF(merc_lon(carGlobalPos.x()), merc_lat(carGlobalPos.y())));
+        _path.append(thisPointInMeters);
+    }
+    _grid.updateOccupancy(
+                thisPointInMeters,
+                carCorrectPositions,
+                allFree);
+}
 
 void DataGenerator::getCarPositionsFromAllData(
         const QMap<QString, QVector<QVector3D>> &carPosHash,
@@ -92,34 +134,17 @@ void DataGenerator::getCarPositionsFromAllData(
 {
     _cars.clear();
     KmlWriter *kmlWriter = new KmlWriter();
-    for (auto name:carPosHash.keys())
+    for (auto name:imageGpsHash.keys())
     {
         QPointF thisPoint = imageGpsHash.value(name);
         QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
         QPointF direction = thisPoint - prevPoint;
         float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x()) * 180 / M_PI;
         QVector<QVector3D> carPositions = carPosHash.value(name);
-        QVector<QPointF> carCorrectPositions;
-        for (auto carPos: carPositions)
-        {
-            QPointF carInCameraViewPosition(carPos.z(), carPos.x());
-            QTransform transform;
-            transform.translate(merc_x(thisPoint.x()), merc_y(thisPoint.y()));
-            transform.rotate(angleOfThisGpsPointSystem);
-            transform.rotate(-90);
-            QPointF carGlobalPos = transform.map(carInCameraViewPosition);
-            _cars.push_back(carGlobalPos);
-            carCorrectPositions.push_back(carGlobalPos);
-            kmlWriter->addPoint(0, name, QPointF(
-                                    merc_lon(carGlobalPos.x()),
-                                    merc_lat(carGlobalPos.y())));
-            _path.append(QPointF(merc_x(prevPoint.x()), merc_y(prevPoint.y())));
-            _path.append(QPointF(merc_x(thisPoint.x()), merc_y(thisPoint.y())));
-        }
-        _grid.updateOccupancy(QPointF(
-                                  merc_x(thisPoint.x()),
-                                  merc_y(thisPoint.y())),
-                              carCorrectPositions);
+        updateOccupancy(
+                    QPointF(merc_x(thisPoint.x()), merc_y(thisPoint.y())),
+                    angleOfThisGpsPointSystem,
+                    carPositions, kmlWriter, name);
     }
     delete kmlWriter;
 }
