@@ -206,7 +206,7 @@ void RenderArea::drawPath(QPainter & painter)
     painter.setPen(pen);
 
     painter.setBrush(Qt::SolidPattern);
-    painter.drawPoints(_path);
+    painter.drawPolyline(_path);
 
     painter.restore();
 }
@@ -326,7 +326,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     drawHouses(painter);
     drawOther(painter);
 //    drawCars(painter);
-//    drawPath(painter);
+    drawPath(painter);
     drawOccupancyGrid(painter);
     // draw on map
     painter.setWorldTransform(QTransform());

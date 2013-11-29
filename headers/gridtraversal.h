@@ -1,10 +1,10 @@
 #ifndef GRIDTRAVERSAL_H
 #define GRIDTRAVERSAL_H
 
-#include <vector>
+#include <QVector>
 #include <QPoint>
 
-typedef std::vector<QPoint> GridLine;
+typedef QVector<QPoint> GridLine;
 
 class GridTraversal {
  public: 

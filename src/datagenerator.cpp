@@ -96,36 +96,34 @@ void DataGenerator::updateOccupancy(const QPointF& thisPointInMeters,
         const QString &name)
 {
     QVector<QPointF> carCorrectPositions;
-    bool allFree = false;
-    if (carPositions.isEmpty())
-    {
-        allFree = true;
-        carPositions.push_back(QVector3D(-5, 0, 20));
-        carPositions.push_back(QVector3D(5, 0, 20));
-    }
+    qreal maxDist = 30;
+    qreal fieldOfView = M_PI * 97. / 180.; // in radians
+    QPointF leftMostPoint(maxDist, maxDist * tan(-fieldOfView / 2));
+    QPointF rightMostPoint(maxDist, maxDist * tan(fieldOfView / 2));
+    QVector<QPointF> marginPoints;
+    QTransform transform;
+    transform.translate(thisPointInMeters.x(), thisPointInMeters.y());
+    transform.rotate(angleOfThisGpsPointSystem);
+    transform.rotate(-90);
+    marginPoints.push_back(transform.map(leftMostPoint));
+    marginPoints.push_back(transform.map(rightMostPoint));
     for (auto carPos: carPositions)
     {
         QPointF carInCameraViewPosition(carPos.z(), carPos.x());
-        if (sqrt(QPointF::dotProduct(carInCameraViewPosition, carInCameraViewPosition)) > 30)
+        if (sqrt(QPointF::dotProduct(carInCameraViewPosition, carInCameraViewPosition)) > 20)
         {
             continue;
         }
-        QTransform transform;
-        transform.translate(thisPointInMeters.x(), thisPointInMeters.y());
-        transform.rotate(angleOfThisGpsPointSystem);
-        transform.rotate(-90);
         QPointF carGlobalPos = transform.map(carInCameraViewPosition);
         carCorrectPositions.push_back(carGlobalPos);
-        if (allFree) continue;
         _cars.push_back(carGlobalPos);
         kmlWriter->addPoint(0, name,
                             QPointF(merc_lon(carGlobalPos.x()), merc_lat(carGlobalPos.y())));
-        _path.append(thisPointInMeters);
     }
-    _grid.updateOccupancy(
-                thisPointInMeters,
-                carCorrectPositions,
-                allFree);
+    _path.append(thisPointInMeters);
+    _grid.add(thisPointInMeters,
+              carCorrectPositions,
+              marginPoints);
 }
 
 void DataGenerator::getCarPositionsFromAllData(

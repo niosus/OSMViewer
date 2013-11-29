@@ -34,8 +34,9 @@ public:
         CELL_WIDTH = other.getCellWidth();
     }
 
-    void updateOccupancy(const QPointF& cameraPosition,
-        const QVector<QPointF>& carPositions, const bool &allFree);
+    void add(const QPointF& cameraPosition,
+        const QVector<QPointF>& carPositions,
+        const QVector<QPointF> &marginPoints);
     qreal getCellProbability(const QPointF& cell);
     void getBounds(
         int& minX, int& maxX,
@@ -56,11 +57,11 @@ private:
     int _minY;
 
     qreal CELL_WIDTH;
-    static constexpr qreal PRIOR = 0.3;
-    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.99;
-    static constexpr qreal FREE_UPDATE_PROB = 0.25;
+    static constexpr qreal PRIOR = 0.5;
+    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.999;
+    static constexpr qreal FREE_UPDATE_PROB = 0.49;
 
-    QPoint findCell(const QPointF& position);
+    QPoint findCellPos(const QPointF& position);
     void updateCellProbability(
             const QPoint& cell,
             const CellState& state);

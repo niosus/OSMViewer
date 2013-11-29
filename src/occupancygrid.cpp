@@ -1,6 +1,9 @@
 #include "occupancygrid.h"
+#include "gridtraversal.h"
 #include <math.h>
+#include <set>
 #include <QDebug>
+
 using namespace std;
 
 qreal constexpr OccupancyGrid::PRIOR;
@@ -40,38 +43,52 @@ void OccupancyGrid::getBounds(int &minX, int &maxX,
     maxY = _maxY * CELL_WIDTH;
 }
 
-void OccupancyGrid::updateOccupancy(
+void OccupancyGrid::add(
         const QPointF& cameraPosition,
         const QVector<QPointF>& carPositions,
-        const bool& allFree)
+        const QVector<QPointF>& marginPoints)
 {
     int minX = INT_MAX;
     int maxX = INT_MIN;
     int minY = INT_MAX;
     int maxY = INT_MIN;
-    QPoint cameraCell = findCell(cameraPosition);
+    QPoint cameraCell = findCellPos(cameraPosition);
     updateMinMaxVals(cameraCell, minX, maxX, minY, maxY);
     QVector<QPoint> carCells;
     for (const auto& carPos: carPositions)
     {
-        QPoint cell = findCell(carPos);
-        carCells.push_back(cell);
-        updateMinMaxVals(cell, minX, maxX, minY, maxY);
+        QPoint cellPos = findCellPos(carPos);
+        GridLine temp;
+        GridTraversal::gridLine(cellPos, 2 * cellPos - cameraCell, temp);
+        carCells.push_back(temp[0]);
+        carCells.push_back(temp[1]);
+
+        updateMinMaxVals(cellPos, minX, maxX, minY, maxY);
     }
-    // update all values in rect from min to max
-    for (int x = minX; x <= maxX; ++x)
+    Q_ASSERT(marginPoints.size() > 1);
+    QPoint leftMostCell = findCellPos(marginPoints[0]);
+    QPoint rightMostCell = findCellPos(marginPoints[1]);
+    GridLine frontier, pathToCurrent;
+    GridTraversal::gridLine(leftMostCell, rightMostCell, frontier);
+    QVector<QPoint> cellsInFov;
+    for (const auto& cell: frontier)
     {
-        for (int y = minY; y <= maxY; ++y)
+        GridTraversal::gridLine(cell, cameraCell, pathToCurrent);
+        for (const auto& pathCell: pathToCurrent)
         {
-            QPoint temp = QPoint(x,y);
-            if (allFree || !carCells.contains(temp))
-            {
-                updateCellProbability(temp, FREE);
-            }
-            else
-            {
-                updateCellProbability(temp, OCCUPIED);
-            }
+            if (!cellsInFov.contains(pathCell))
+                cellsInFov.push_back(pathCell);
+        }
+    }
+    for (const auto& cell: cellsInFov)
+    {
+        if (!carCells.contains(cell))
+        {
+            updateCellProbability(cell, FREE);
+        }
+        else
+        {
+            updateCellProbability(cell, OCCUPIED);
         }
     }
 }
@@ -93,7 +110,7 @@ qreal OccupancyGrid::getCellProbability(const QPointF& cell)
     return PRIOR;
 }
 
-QPoint OccupancyGrid::findCell(const QPointF& position)
+QPoint OccupancyGrid::findCellPos(const QPointF& position)
 {
     int x = floor(position.x() / CELL_WIDTH);
     int y = floor(position.y() / CELL_WIDTH);
@@ -122,7 +139,7 @@ void OccupancyGrid::updateCellProbability(
         prob = OCCUPIED_UPDATE_PROB;
         break;
     }
-    if (_grid[x][y] == 0) _grid[x][y] = toLogOdds(0.5);
+    if (_grid[x][y] == 0) _grid[x][y] = toLogOdds(PRIOR);
     _grid[x][y] = toLogOdds(prob) + _grid[x][y] - toLogOdds(PRIOR);
 }
 

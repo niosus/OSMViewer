@@ -20,8 +20,9 @@ SOURCES += src/main.cpp \
     src/mercator.cpp \
     src/kmlwriter.cpp \
     src/occupancygrid.cpp \
-    src/occupancy_test.cpp \
-    src/gridtraversal.cpp
+    src/gridtraversal.cpp \
+    src/test_occupancy.cpp \
+    src/test_bresenhem.cpp
 
 HEADERS  += \
     headers/window.h \
@@ -30,8 +31,9 @@ HEADERS  += \
     headers/mercator.h \
     headers/kmlwriter.h \
     headers/occupancygrid.h \
-    headers/occupancy_test.h \
-    headers/gridtraversal.h
+    headers/gridtraversal.h \
+    headers/test_bresenhem.h \
+    headers/test_occupancy.h
 
 INCLUDEPATH += \
     headers \
