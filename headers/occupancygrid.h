@@ -11,6 +11,7 @@ typedef QHash<int, QHash<int, qreal> > Grid;
 class OccupancyGrid
 {
 public:
+    static constexpr qreal NOT_TOUCHED = -1;
     enum CellState {OCCUPIED, FREE};
     OccupancyGrid():
         _maxX(INT_MIN),
@@ -45,6 +46,18 @@ public:
     void setCellWidth(const qreal& cellWidth)
     {
         CELL_WIDTH = cellWidth;
+    }
+    static qreal prior()
+    {
+        return PRIOR;
+    }
+    static qreal occupiedProbability()
+    {
+        return OCCUPIED_UPDATE_PROB;
+    }
+    static qreal freeProbability()
+    {
+        return FREE_UPDATE_PROB;
     }
 
 

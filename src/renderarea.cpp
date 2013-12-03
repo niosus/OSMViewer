@@ -249,7 +249,15 @@ void RenderArea::drawOccupancyGrid(QPainter & painter)
         for (qreal y = minY; y <= maxY; y+=_grid.getCellWidth())
         {
             qreal prob = _grid.getCellProbability(QPointF(x, y));
-            painter.setOpacity(prob);
+            if (prob < 0) {
+                pen.setColor(QColor(0,0,255));
+                painter.setPen(pen);
+                painter.setOpacity(0.3);
+            } else {
+                pen.setColor(QColor(255,0,0));
+                painter.setPen(pen);
+                painter.setOpacity(prob);
+            }
             painter.drawPoint(x, y);
         }
     }

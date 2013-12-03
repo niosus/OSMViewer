@@ -7,6 +7,9 @@
 using namespace std;
 
 qreal constexpr OccupancyGrid::PRIOR;
+qreal constexpr OccupancyGrid::FREE_UPDATE_PROB;
+qreal constexpr OccupancyGrid::OCCUPIED_UPDATE_PROB;
+qreal constexpr OccupancyGrid::NOT_TOUCHED;
 
 qreal toLogOdds(const qreal& prob)
 {
@@ -107,7 +110,7 @@ qreal OccupancyGrid::getCellProbability(const QPointF& cell)
             return fromLogOdds(iterY.value());
         }
     }
-    return PRIOR;
+    return NOT_TOUCHED;
 }
 
 QPoint OccupancyGrid::findCellPos(const QPointF& position)
