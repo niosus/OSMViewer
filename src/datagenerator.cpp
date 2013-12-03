@@ -343,4 +343,6 @@ void DataGenerator::getNodesAndWaysFromXml()
     //close reader and flush file
     xmlReader->clear();
     xmlFile->close();
+    delete xmlReader;
+    delete xmlFile;
 }
