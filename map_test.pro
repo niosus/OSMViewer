@@ -48,4 +48,4 @@ INCLUDEPATH += /usr/include
 
 LIBS += -L/usr/lib -lkmlbase -lkmldom
 
-CONFIG += qtestlib
+QT += testlib

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <set>
 #include <QDebug>
+#include <QPainter>
 
 using namespace std;
 
@@ -76,9 +77,17 @@ void OccupancyGrid::add(
     QVector<QPoint> cellsInFov;
     for (const auto& cell: frontier)
     {
-        GridTraversal::gridLine(cell, cameraCell, pathToCurrent);
+        GridTraversal::gridLine(cameraCell, cell, pathToCurrent);
+        bool foundCar = false;
         for (const auto& pathCell: pathToCurrent)
         {
+            if (carCells.contains(pathCell))
+            {
+               cellsInFov.push_back(pathCell);
+               foundCar = true;
+               continue;
+            }
+            if (foundCar) break;
             if (!cellsInFov.contains(pathCell))
                 cellsInFov.push_back(pathCell);
         }
@@ -97,7 +106,7 @@ void OccupancyGrid::add(
 }
 
 // returns PRIOR if no such cell, or probability otherwise
-qreal OccupancyGrid::getCellProbability(const QPointF& cell)
+qreal OccupancyGrid::getCellProbability(const QPointF& cell) const
 {
     QHash<int, QHash<int, qreal> >::const_iterator iterX =
             _grid.find(cell.x() / CELL_WIDTH);
@@ -151,3 +160,40 @@ qreal OccupancyGrid::getCellWidth() const
     return CELL_WIDTH;
 }
 
+
+void OccupancyGrid::writeMapImage(int xMin, int yMin, int xMax, int yMax, QString imageName) const
+{
+    int width = xMax - xMin;
+    int height = yMax - yMin;
+    int cellSize = 10; //px
+    QImage image(width * cellSize, height * cellSize, QImage::Format_RGB32);
+    qDebug() << xMin << xMax << yMin << yMax;
+    QRgb color;
+    for (int x = 0; x < image.width(); x+=cellSize)
+    {
+        for (int y = 0; y < image.height(); y+=cellSize)
+        {
+            for (int xx = x; xx < x + cellSize; ++xx)
+            {
+                for (int yy = y; yy < y + cellSize; ++yy)
+                {
+                    QPointF point(xMin + x/cellSize, yMin + y/cellSize);
+                    qreal prob = this->getCellProbability(point);
+                    if (xx < image.width() && yy < image.height())
+                    {
+                        int val = (int) floor(prob * 255);
+//                        int val = 255;
+                        if (val < 0) val = 0;
+                        QColor colorRgb(val,val,val);
+                        color = colorRgb.rgb();
+                        image.setPixel(xx, image.height() - yy, color);
+                    }
+                }
+            }
+        }
+    }
+    qDebug() << "saving";
+    qDebug() << image.size();
+    qDebug() << image.save("/home/igor/" + imageName + ".jpg");
+    qDebug() << "saved"<<"/home/igor/" + imageName + ".jpg";
+}

@@ -29,8 +29,8 @@ void DataGenerator::generateData()
 
 void DataGenerator::getCarsFromLogFiles()
 {
-    QFile * logImagesGps = new QFile(":/log/log_images_gps_freiburg.txt");
-    QFile * logImagesRects = new QFile(":/log/log.dat");
+    QFile * logImagesGps = new QFile(":/log/gps_for_each_image_log.txt");
+    QFile * logImagesRects = new QFile(":/log/car_rects_log.dat");
     if (!logImagesGps->open(QIODevice::ReadOnly)
             || !logImagesRects->open(QIODevice::ReadOnly))
     {
@@ -39,25 +39,39 @@ void DataGenerator::getCarsFromLogFiles()
         QMessageBox::Ok);
         return;
     }
-    QMap<QString, QPointF> imageGpsHash;
+    QMap<QString, QPointF> imagePositionHash;
     QMap<QString, QVector<QVector3D> > carPosHash;
 
     // reading in all images
-    QTextStream inGps(logImagesGps);
-    while(!inGps.atEnd()) {
-        QString line = inGps.readLine();
+    QTextStream inPositions(logImagesGps);
+    while(!inPositions.atEnd()) {
+        QString line = inPositions.readLine();
         QStringList fields = line.split("\t\t");
         QString name = fields[1].split("=")[1];
-        float lon = fields[2].split("=")[1].toFloat();
-        float lat = fields[3].split("=")[1].toFloat();
-        imageGpsHash[name]=QPointF(lon,lat);
+        float x = fields[2].split("=")[1].toFloat();
+        float y = fields[3].split("=")[1].toFloat();
+        imagePositionHash[name]=QPointF(x, y);
 //        _path.append(QPointF(merc_x(lon), merc_y(lat)));
     }
 
     // read in all detected cars' rects
     QTextStream inRects(logImagesRects);
+    QVector<QString> allUsedImages;
     while(!inRects.atEnd()) {
         QString line = inRects.readLine();
+        if (line.contains("TOTAL_NUM_IMAGES"))
+        {
+            // no error check.
+            // This code is awful. Hope noone ever sees this...
+            int num = line.split("\t", QString::SkipEmptyParts)[1].toInt();
+            qDebug() << num;
+            for (int i = 0; i < num; ++i)
+            {
+                line = inRects.readLine();
+                allUsedImages.push_back(line);
+            }
+            continue;
+        }
         QStringList fields = line.split("\t");
         QString name = fields[0].split(":")[1];
         float x = fields[1].split(":")[1].toFloat();
@@ -65,7 +79,7 @@ void DataGenerator::getCarsFromLogFiles()
         float z = fields[3].split(":")[1].toFloat();
         carPosHash[name].append(QVector3D(x, y, z));
     }
-    getCarPositionsFromAllData(carPosHash, imageGpsHash);
+    getCarPositionsFromAllData(allUsedImages, carPosHash, imagePositionHash);
 
     logImagesGps->close();
     logImagesRects->close();
@@ -73,16 +87,16 @@ void DataGenerator::getCarsFromLogFiles()
     delete logImagesRects;
 }
 
-QPointF DataGenerator::getPrevGpsPoint(const QString &name, const QMap<QString, QPointF> &imageGpsHash)
+QPointF DataGenerator::getPrevGpsPoint(const QString &name, const QMap<QString, QPointF> &imagePositionHash)
 {
     QMap<QString, QPointF>::const_iterator pointIter;
-    pointIter = imageGpsHash.find(name);
-    if (pointIter==imageGpsHash.end())
+    pointIter = imagePositionHash.find(name);
+    if (pointIter==imagePositionHash.end())
     {
         return QPointF();
     }
     QPointF refPoint = *pointIter;
-    while (pointIter!=imageGpsHash.begin() && *pointIter == refPoint)
+    while (pointIter!=imagePositionHash.begin() && *pointIter == refPoint)
     {
         pointIter--;
     }
@@ -127,12 +141,14 @@ void DataGenerator::updateOccupancy(const QPointF& thisPointInMeters,
 }
 
 void DataGenerator::getCarPositionsFromAllData(
+        const QVector<QString> &allImageNames,
         const QMap<QString, QVector<QVector3D>> &carPosHash,
         const QMap<QString, QPointF> &imageGpsHash)
 {
     _cars.clear();
+    int counter = 0;
     KmlWriter *kmlWriter = new KmlWriter();
-    for (auto name:imageGpsHash.keys())
+    for (const auto& name: allImageNames)
     {
         QPointF thisPoint = imageGpsHash.value(name);
         QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
@@ -140,9 +156,13 @@ void DataGenerator::getCarPositionsFromAllData(
         float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x()) * 180 / M_PI;
         QVector<QVector3D> carPositions = carPosHash.value(name);
         updateOccupancy(
-                    QPointF(merc_x(thisPoint.x()), merc_y(thisPoint.y())),
+                    QPointF(thisPoint.x(), thisPoint.y()),
                     angleOfThisGpsPointSystem,
                     carPositions, kmlWriter, name);
+        QString name;
+        name.setNum(++counter);
+        name  = "mymap" + name;
+        _grid.writeMapImage(871930, 6077399, 872010, 6077509, name);
     }
     delete kmlWriter;
 }

@@ -97,6 +97,8 @@ void RenderArea::receiveGrid(OccupancyGrid& grid)
     grid.getBounds(minX, maxX, minY, maxY);
     qDebug()<<"bounds received"<< minX << maxX << minY << maxY;
     this->_grid = OccupancyGrid(grid);
+    int padding = 30;
+    grid.writeMapImage(minX - padding, minY - padding, maxX + padding, maxY + padding, "mymap");
     update();
 }
 
@@ -197,7 +199,7 @@ void RenderArea::drawCameraPos(QPainter & painter)
 void RenderArea::drawPath(QPainter & painter)
 {
     painter.save();
-
+    qDebug()<<_path[0];
     QPen pen(QColor(0,50,250));
     pen.setCapStyle(Qt::RoundCap);
 

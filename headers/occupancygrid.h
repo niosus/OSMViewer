@@ -38,7 +38,7 @@ public:
     void add(const QPointF& cameraPosition,
         const QVector<QPointF>& carPositions,
         const QVector<QPointF> &marginPoints);
-    qreal getCellProbability(const QPointF& cell);
+    qreal getCellProbability(const QPointF& cell) const;
     void getBounds(
         int& minX, int& maxX,
         int& minY, int& maxY) const;
@@ -59,6 +59,7 @@ public:
     {
         return FREE_UPDATE_PROB;
     }
+    void writeMapImage(int xMin, int yMin, int xMax, int yMax, QString imageName) const;
 
 
 private:
@@ -71,7 +72,7 @@ private:
 
     qreal CELL_WIDTH;
     static constexpr qreal PRIOR = 0.5;
-    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.999;
+    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.9;
     static constexpr qreal FREE_UPDATE_PROB = 0.49;
 
     QPoint findCellPos(const QPointF& position);

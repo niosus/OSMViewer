@@ -32,11 +32,10 @@ private:
 
     void getNodesAndWaysFromXml();
     void getCarsFromLogFiles();
-    void getCarPositionsFromAllData(const QMap<QString, QVector<QVector3D> > &carPosHash,
+    void getCarPositionsFromAllData(const QVector<QString> &allImageNames, const QMap<QString, QVector<QVector3D> > &carPosHash,
             const QMap<QString, QPointF> &imageGpsHash);
-    QPointF getPrevGpsPoint(
-            const QString &name,
-            const QMap<QString, QPointF> &imageGpsHash);
+    QPointF getPrevGpsPoint(const QString &name,
+            const QMap<QString, QPointF> &imagePositionHash);
     void storeNewNode(QXmlStreamReader *xmlReader);
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);

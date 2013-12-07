@@ -4,7 +4,7 @@
         <file>maps/big_map.osm</file>
         <file>log/log_images_gps.txt</file>
         <file>maps/stuhlinger.osm</file>
-        <file>log/log.dat</file>
-        <file>log/log_images_gps_freiburg.txt</file>
+        <file>log/gps_for_each_image_log.txt</file>
+        <file>log/car_rects_log.dat</file>
     </qresource>
 </RCC>
