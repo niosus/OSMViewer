@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QVector>
 #include <QVector3D>
+#include "point_with_rot.h"
 #include <cmath>
 
 #include "mercator.h"
@@ -39,7 +40,7 @@ void DataGenerator::getCarsFromLogFiles()
         QMessageBox::Ok);
         return;
     }
-    QMap<QString, QPointF> imagePositionHash;
+    QMap<QString, MyPointF> imagePositionHash;
     QMap<QString, QVector<QVector3D> > carPosHash;
 
     // reading in all images
@@ -50,7 +51,8 @@ void DataGenerator::getCarsFromLogFiles()
         QString name = fields[1].split("=")[1];
         float x = fields[2].split("=")[1].toFloat();
         float y = fields[3].split("=")[1].toFloat();
-        imagePositionHash[name]=QPointF(x, y);
+        float theta = fields[4].split("=")[1].toFloat();
+        imagePositionHash[name]=MyPointF(x, y, theta);
 //        _path.append(QPointF(merc_x(lon), merc_y(lat)));
     }
 
@@ -87,22 +89,6 @@ void DataGenerator::getCarsFromLogFiles()
     delete logImagesRects;
 }
 
-QPointF DataGenerator::getPrevGpsPoint(const QString &name, const QMap<QString, QPointF> &imagePositionHash)
-{
-    QMap<QString, QPointF>::const_iterator pointIter;
-    pointIter = imagePositionHash.find(name);
-    if (pointIter==imagePositionHash.end())
-    {
-        return QPointF();
-    }
-    QPointF refPoint = *pointIter;
-    while (pointIter!=imagePositionHash.begin() && *pointIter == refPoint)
-    {
-        pointIter--;
-    }
-    return *pointIter;
-}
-
 void DataGenerator::updateOccupancy(const QPointF& thisPointInMeters,
         const float &angleOfThisGpsPointSystem,
         QVector<QVector3D>& carPositions,
@@ -118,7 +104,6 @@ void DataGenerator::updateOccupancy(const QPointF& thisPointInMeters,
     QTransform transform;
     transform.translate(thisPointInMeters.x(), thisPointInMeters.y());
     transform.rotate(angleOfThisGpsPointSystem);
-    transform.rotate(-90);
     marginPoints.push_back(transform.map(leftMostPoint));
     marginPoints.push_back(transform.map(rightMostPoint));
     for (auto carPos: carPositions)
@@ -143,17 +128,15 @@ void DataGenerator::updateOccupancy(const QPointF& thisPointInMeters,
 void DataGenerator::getCarPositionsFromAllData(
         const QVector<QString> &allImageNames,
         const QMap<QString, QVector<QVector3D>> &carPosHash,
-        const QMap<QString, QPointF> &imageGpsHash)
+        const QMap<QString, MyPointF> &imageGpsHash)
 {
     _cars.clear();
     int counter = 0;
     KmlWriter *kmlWriter = new KmlWriter();
     for (const auto& name: allImageNames)
     {
-        QPointF thisPoint = imageGpsHash.value(name);
-        QPointF prevPoint = getPrevGpsPoint(name, imageGpsHash);
-        QPointF direction = thisPoint - prevPoint;
-        float angleOfThisGpsPointSystem = atan2(direction.y(), direction.x()) * 180 / M_PI;
+        MyPointF thisPoint = imageGpsHash.value(name);
+        float angleOfThisGpsPointSystem = thisPoint.theta() * 180 / M_PI;
         QVector<QVector3D> carPositions = carPosHash.value(name);
         updateOccupancy(
                     QPointF(thisPoint.x(), thisPoint.y()),

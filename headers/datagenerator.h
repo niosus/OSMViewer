@@ -9,6 +9,7 @@
 #include <QPolygonF>
 #include "kmlwriter.h"
 #include "occupancygrid.h"
+#include "point_with_rot.h"
 
 class DataGenerator: public QObject
 {
@@ -33,9 +34,9 @@ private:
     void getNodesAndWaysFromXml();
     void getCarsFromLogFiles();
     void getCarPositionsFromAllData(const QVector<QString> &allImageNames, const QMap<QString, QVector<QVector3D> > &carPosHash,
-            const QMap<QString, QPointF> &imageGpsHash);
+            const QMap<QString, MyPointF> &imageGpsHash);
     QPointF getPrevGpsPoint(const QString &name,
-            const QMap<QString, QPointF> &imagePositionHash);
+            const QMap<QString, MyPointF> &imagePositionHash);
     void storeNewNode(QXmlStreamReader *xmlReader);
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);

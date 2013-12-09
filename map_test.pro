@@ -33,7 +33,8 @@ HEADERS  += \
     headers/occupancygrid.h \
     headers/gridtraversal.h \
     headers/test_bresenhem.h \
-    headers/test_occupancy.h
+    headers/test_occupancy.h \
+    headers/point_with_rot.h
 
 INCLUDEPATH += \
     headers \
