@@ -181,10 +181,16 @@ void OccupancyGrid::writeMapImage(int xMin, int yMin, int xMax, int yMax, QStrin
                     qreal prob = this->getCellProbability(point);
                     if (xx < image.width() && yy < image.height())
                     {
-                        int val = (int) floor(prob * 255);
-//                        int val = 255;
-                        if (val < 0) val = 0;
-                        QColor colorRgb(val,val,val);
+                        QColor colorRgb;
+                        if (prob < 0)
+                        {
+                            colorRgb = QColor(50,50,70);
+                        }
+                        else
+                        {
+                            int val = (int) floor((1 - prob) * 255);
+                            colorRgb = QColor(val,val,val);
+                        }
                         color = colorRgb.rgb();
                         image.setPixel(xx, image.height() - yy, color);
                     }

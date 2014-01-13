@@ -97,8 +97,8 @@ void RenderArea::receiveGrid(OccupancyGrid& grid)
     grid.getBounds(minX, maxX, minY, maxY);
     qDebug()<<"bounds received"<< minX << maxX << minY << maxY;
     this->_grid = OccupancyGrid(grid);
-    int padding = 30;
-    grid.writeMapImage(minX - padding, minY - padding, maxX + padding, maxY + padding, "mymap");
+    grid.writeMapImage(871831, 6077369, 872040, 6077539, "mymap");
+//    _grid.writeMapImage(871930, 6077399, 872010, 6077509, name);
     update();
 }
 

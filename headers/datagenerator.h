@@ -33,7 +33,14 @@ private:
 
     void getNodesAndWaysFromXml();
     void getCarsFromLogFiles();
-    void getCarPositionsFromAllData(const QVector<QString> &allImageNames, const QMap<QString, QVector<QVector3D> > &carPosHash,
+    void getCarsGpsPosFromLogFiles();
+    void getCarPositionsFromAllData(
+            const QVector<QString> &allImageNames,
+            const QMap<QString, QVector<QVector3D> > &carPosHash,
+            const QMap<QString, MyPointF> &imageGpsHash);
+    void getCarPositionsFromAllDataLaser(
+            const QVector<QString> &allImageNames,
+            const QMap<QString, QVector<QPointF> > &carPosHash,
             const QMap<QString, MyPointF> &imageGpsHash);
     QPointF getPrevGpsPoint(const QString &name,
             const QMap<QString, MyPointF> &imagePositionHash);
@@ -44,6 +51,11 @@ private:
             const float &angleOfThisGpsPointSystem,
             QVector<QVector3D> &carPositions,
             KmlWriter *kmlWriter, const QString &name);
+    void updateOccupancyLaser(const QPointF& thisPointInMeters,
+            const float &angleOfThisGpsPointSystem,
+            QVector<QPointF>& carPositions,
+            KmlWriter* kmlWriter,
+            const QString &name);
 
 signals:
     void boundariesUpdated(QHash<QString, double> &bounds);
