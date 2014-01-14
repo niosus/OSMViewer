@@ -64,8 +64,11 @@ void OccupancyGrid::add(
         QPoint cellPos = findCellPos(carPos);
         GridLine temp;
         GridTraversal::gridLine(cellPos, 2 * cellPos - cameraCell, temp);
+        qDebug()<<"here3?";
+        if (temp.size() < 2) return;
         carCells.push_back(temp[0]);
         carCells.push_back(temp[1]);
+        qDebug()<<"here3!";
 
         updateMinMaxVals(cellPos, minX, maxX, minY, maxY);
     }
