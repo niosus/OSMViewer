@@ -72,8 +72,8 @@ private:
 
     qreal CELL_WIDTH;
     static constexpr qreal PRIOR = 0.5;
-    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.99;
-    static constexpr qreal FREE_UPDATE_PROB = 0.45;
+    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.99999;
+    static constexpr qreal FREE_UPDATE_PROB = 0.47;
 
     QPoint findCellPos(const QPointF& position);
     void updateCellProbability(

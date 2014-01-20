@@ -12,5 +12,14 @@
         <file>log/log_11_12_2013/gps_for_each_image_log.txt</file>
         <file>log/log_11_12_2013/car_rects_log.dat</file>
         <file>log/log_5_12_2013/car_pos_log.dat</file>
+        <file>log/log_15_1_2014/car_pos_log.dat</file>
+        <file>log/log_15_1_2014/gps_for_each_image_log_15_1.txt</file>
+        <file>log/cars/car_pos_log_6_12_2013.dat</file>
+        <file>log/cars/car_pos_log_9_12_2013.dat</file>
+        <file>log/cars/car_pos_log_15_1_2014.dat</file>
+        <file>log/cars/gps_for_images_log_5_12_2013.txt</file>
+        <file>log/cars/gps_for_images_log_6_12_2013.txt</file>
+        <file>log/cars/gps_for_images_log_9_12_2013.txt</file>
+        <file>log/cars/gps_for_images_log_15_1_2014.txt</file>
     </qresource>
 </RCC>

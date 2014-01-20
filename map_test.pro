@@ -22,7 +22,8 @@ SOURCES += src/main.cpp \
     src/occupancygrid.cpp \
     src/gridtraversal.cpp \
     src/test_occupancy.cpp \
-    src/test_bresenhem.cpp
+    src/test_bresenhem.cpp \
+    src/logReader.cpp
 
 HEADERS  += \
     headers/window.h \
@@ -34,7 +35,8 @@ HEADERS  += \
     headers/gridtraversal.h \
     headers/test_bresenhem.h \
     headers/test_occupancy.h \
-    headers/point_with_rot.h
+    headers/point_with_rot.h \
+    headers/logReader.h
 
 INCLUDEPATH += \
     headers \

@@ -29,16 +29,19 @@ private:
     QVector<QPolygonF> _other;
     QVector<QPointF> _cars;
     QPolygonF _path;
-    OccupancyGrid _grid;
+    QHash<QString, OccupancyGrid> _grids;
 
     void getNodesAndWaysFromXml();
     void getCarsFromLogFiles();
-    void getCarsGpsPosFromLogFiles();
+    void getCarsGpsPosFromLogFiles(const QString &date,
+            const QString &imagesGpsFileName,
+            const QString &detectedCarsFileName);
     void getCarPositionsFromAllData(
             const QVector<QString> &allImageNames,
             const QMap<QString, QVector<QVector3D> > &carPosHash,
             const QMap<QString, MyPointF> &imageGpsHash);
     void getCarPositionsFromAllDataLaser(
+            const QString &date,
             const QVector<QString> &allImageNames,
             const QMap<QString, QVector<QPointF> > &carPosHash,
             const QMap<QString, MyPointF> &imageGpsHash);
@@ -47,11 +50,13 @@ private:
     void storeNewNode(QXmlStreamReader *xmlReader);
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);
-    void updateOccupancy(const QPointF& thisPointInMeters,
+    void updateOccupancy(const QString &date, const QPointF& thisPointInMeters,
             const float &angleOfThisGpsPointSystem,
             QVector<QVector3D> &carPositions,
             KmlWriter *kmlWriter, const QString &name);
-    void updateOccupancyLaser(const QPointF& thisPointInMeters,
+    void updateOccupancyLaser(
+            const QString &date,
+            const QPointF& thisPointInMeters,
             const float &angleOfThisGpsPointSystem,
             QVector<QPointF>& carPositions,
             KmlWriter* kmlWriter,
