@@ -31,12 +31,11 @@ void DataGenerator::generateData()
                        tempHash[LogReader::CARS_POS]);
     }
     getNodesAndWaysFromXml();
-    getCarsFromLogFiles();
+//    getCarsFromLogFiles();
     emit dataGenerated(_roads, _houses, _parkings, _other);
     emit carsGenerated(_cars);
     emit pathGenerated(_path);
-    emit gridGenerated(_grids[logReader.getAvailableDates()[0]]);
-    writeTestKml();
+    emit gridsGenerated(_grids);
 }
 
 void DataGenerator::getCarsFromLogFiles()
@@ -77,7 +76,6 @@ void DataGenerator::getCarsFromLogFiles()
             // no error check.
             // This code is awful. Hope noone ever sees this...
             int num = line.split("\t", QString::SkipEmptyParts)[1].toInt();
-            qDebug() << num;
             for (int i = 0; i < num; ++i)
             {
                 line = inRects.readLine();
@@ -123,7 +121,6 @@ void DataGenerator::getCarsGpsPosFromLogFiles(
     while(!inPositions.atEnd()) {
         QString line = inPositions.readLine();
         QStringList fields = line.split("\t");
-        qDebug()<<fields.size();
         Q_ASSERT(fields.size() == 5);
         QString name = fields[1].split("=")[1];
         float x = fields[2].split("=")[1].toFloat();
@@ -273,7 +270,6 @@ void DataGenerator::getCarPositionsFromAllDataLaser(
         MyPointF thisPoint = imageGpsHash.value(name);
         float angleOfThisGpsPointSystem = thisPoint.theta() * 180 / M_PI;
         QVector<QPointF> carPositions = carPosHash.value(name);
-        qDebug()<<"here?";
         updateOccupancyLaser(
                     date,
                     QPointF(thisPoint.x(), thisPoint.y()),
@@ -281,11 +277,10 @@ void DataGenerator::getCarPositionsFromAllDataLaser(
                     carPositions,
                     kmlWriter,
                     name);
-        qDebug()<<"here!";
         QString name;
         name.setNum(++counter);
         name  = "mymap" + name;
-        qDebug() << name;
+//        qDebug() << name;
     }
     delete kmlWriter;
 }

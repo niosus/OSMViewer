@@ -10,6 +10,7 @@
 #include "kmlwriter.h"
 #include "occupancygrid.h"
 #include "point_with_rot.h"
+#include "logReader.h"
 
 class DataGenerator: public QObject
 {
@@ -71,7 +72,7 @@ signals:
             QVector<QPolygonF> &other);
     void carsGenerated(QVector<QPointF> &cars);
     void pathGenerated(QPolygonF &path);
-    void gridGenerated(OccupancyGrid& grid);
+    void gridsGenerated(QHash<QString, OccupancyGrid>& grid);
 
 };
 

@@ -9,6 +9,7 @@
 #include <QWheelEvent>
 #include <QPolygonF>
 #include "occupancygrid.h"
+#include "logReader.h"
 
 
 //! [0]
@@ -32,7 +33,7 @@ public slots:
             QVector<QPolygonF> &other);
     void receiveNewCars(QVector<QPointF> &cars);
     void receiveNewPath(QPolygonF &path);
-    void receiveGrid(OccupancyGrid &grid);
+    void receiveGrids(QHash<QString, OccupancyGrid>& grids);
 
 protected:
     void paintEvent(QPaintEvent *event);

@@ -91,14 +91,19 @@ void RenderArea::receiveNewData(
     update();
 }
 
-void RenderArea::receiveGrid(OccupancyGrid& grid)
+void RenderArea::receiveGrids(QHash<QString, OccupancyGrid>& grids)
 {
     int minX, maxX, minY, maxY;
-    grid.getBounds(minX, maxX, minY, maxY);
-    qDebug()<<"bounds received"<< minX << maxX << minY << maxY;
-    this->_grid = OccupancyGrid(grid);
-    grid.writeMapImage(871831, 6077369, 872040, 6077539, "mymap");
-//    _grid.writeMapImage(871930, 6077399, 872010, 6077509, name);
+    qDebug() << grids.keys();
+    for (const QString& date: grids.keys())
+    {
+        grids[date].getBounds(minX, maxX, minY, maxY);
+        qDebug()<<"bounds received"<< minX << maxX << minY << maxY;
+//        this->_grid = OccupancyGrid(grids["log_15_1_2014"]);
+        // Hack the map max min vals are hardcoded
+        //TODO
+        grids[date].writeMapImage(871831, 6077369, 872040, 6077539, "mymap_" + date);
+    }
     update();
 }
 
