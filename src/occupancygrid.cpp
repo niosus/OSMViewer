@@ -4,6 +4,7 @@
 #include <set>
 #include <QDebug>
 #include <QPainter>
+#include <QCoreApplication>
 
 using namespace std;
 
@@ -110,11 +111,11 @@ void OccupancyGrid::add(
 qreal OccupancyGrid::getCellProbability(const QPointF& cell) const
 {
     QHash<int, QHash<int, qreal> >::const_iterator iterX =
-            _grid.find(cell.x() / CELL_WIDTH);
+            _grid.find((int) floor(cell.x() / CELL_WIDTH));
     QHash<int, qreal>::const_iterator iterY;
     if (iterX != _grid.end())
     {
-        iterY = iterX.value().find(cell.y() / CELL_WIDTH);
+        iterY = iterX.value().find((int) floor(cell.y() / CELL_WIDTH));
         if (iterY != iterX.value().end())
         {
             return fromLogOdds(iterY.value());
@@ -199,8 +200,10 @@ void OccupancyGrid::writeMapImage(int xMin, int yMin, int xMax, int yMax, QStrin
             }
         }
     }
+    QString dirPath = QCoreApplication::applicationDirPath();
+    dirPath = dirPath.left(dirPath.lastIndexOf('/')) + "/OSMViewer/grids/";
     qDebug() << "saving";
     qDebug() << image.size();
-    qDebug() << image.save("/home/igor/" + imageName + ".jpg");
-    qDebug() << "saved"<<"/home/igor/" + imageName + ".jpg";
+    qDebug() << image.save(dirPath + imageName + ".jpg");
+    qDebug() << "saved"<<dirPath + imageName + ".jpg";
 }

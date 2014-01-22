@@ -79,7 +79,8 @@ private:
     void updateCellProbability(
             const QPoint& cell,
             const CellState& state);
-    void updateCellProbability(const int &x,
+    void updateCellProbability(
+            const int &x,
             const int &y,
             const CellState& state);
     void updateMinMaxVals(const QPoint& cell,

@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QFontMetrics>
 
+#include "occupancy_predictor.h"
 #include "renderarea.h"
 
 RenderArea::RenderArea(QWidget *parent)
@@ -104,6 +105,9 @@ void RenderArea::receiveGrids(QHash<QString, OccupancyGrid>& grids)
         //TODO
         grids[date].writeMapImage(871831, 6077369, 872040, 6077539, "mymap_" + date);
     }
+    OccupancyPredictor predictor;
+    predictor.predictFromGrids(grids);
+    predictor.writeImage(871831, 6077369, 872040, 6077539, "my_prediction");
     update();
 }
 
