@@ -18,7 +18,7 @@ public:
         _maxY(INT_MIN),
         _minX(INT_MAX),
         _minY(INT_MAX),
-        CELL_WIDTH(2){}
+        CELL_WIDTH(3){}
     OccupancyGrid(const qreal& cellWidth):
         _maxX(INT_MIN),
         _maxY(INT_MIN),
@@ -72,7 +72,7 @@ private:
 
     qreal CELL_WIDTH;
     static constexpr qreal PRIOR = 0.5;
-    static constexpr qreal OCCUPIED_UPDATE_PROB = 0.95;
+    static constexpr qreal OCCUPIED_UPDATE_PROB = 1;
     static constexpr qreal FREE_UPDATE_PROB = 0.49;
 
     QPoint findCellPos(const QPointF& position);

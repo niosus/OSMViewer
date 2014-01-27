@@ -15,6 +15,7 @@
 
 
 DataGenerator::DataGenerator(){
+    _parkingLots = ParkingLots(762, 884);
 }
 
 void DataGenerator::generateData()
@@ -30,12 +31,13 @@ void DataGenerator::generateData()
                        tempHash[LogReader::IMAGES_POS],
                        tempHash[LogReader::CARS_POS]);
     }
-    getNodesAndWaysFromXml();
+    _parkingLots.writeImage(871831, 6077369, 872040, 6077539, "parking_lots");
+//    getNodesAndWaysFromXml();
 //    getCarsFromLogFiles();
-    emit dataGenerated(_roads, _houses, _parkings, _other);
-    emit carsGenerated(_cars);
-    emit pathGenerated(_path);
-    emit gridsGenerated(_grids);
+//    emit dataGenerated(_roads, _houses, _parkings, _other);
+//    emit carsGenerated(_cars);
+//    emit pathGenerated(_path);
+//    emit gridsGenerated(_grids);
 }
 
 void DataGenerator::getCarsFromLogFiles()
@@ -59,11 +61,10 @@ void DataGenerator::getCarsFromLogFiles()
         QString line = inPositions.readLine();
         QStringList fields = line.split("\t\t");
         QString name = fields[1].split("=")[1];
-        float x = fields[2].split("=")[1].toFloat();
-        float y = fields[3].split("=")[1].toFloat();
-        float theta = fields[4].split("=")[1].toFloat();
+        qreal x = fields[2].split("=")[1].toDouble();
+        qreal y = fields[3].split("=")[1].toDouble();
+        qreal theta = fields[4].split("=")[1].toDouble();
         imagePositionHash[name]=MyPointF(x, y, theta);
-//        _path.append(QPointF(merc_x(lon), merc_y(lat)));
     }
 
     // read in all detected cars' rects
@@ -85,9 +86,9 @@ void DataGenerator::getCarsFromLogFiles()
         }
         QStringList fields = line.split("\t");
         QString name = fields[0].split(":")[1];
-        float x = fields[1].split(":")[1].toFloat();
-        float y = fields[2].split(":")[1].toFloat();
-        float z = fields[3].split(":")[1].toFloat();
+        qreal x = fields[1].split(":")[1].toDouble();
+        qreal y = fields[2].split(":")[1].toDouble();
+        qreal z = fields[3].split(":")[1].toDouble();
         carPosHash[name].append(QVector3D(x, y, z));
     }
     getCarPositionsFromAllData(allUsedImages, carPosHash, imagePositionHash);
@@ -123,11 +124,10 @@ void DataGenerator::getCarsGpsPosFromLogFiles(
         QStringList fields = line.split("\t");
         Q_ASSERT(fields.size() == 5);
         QString name = fields[1].split("=")[1];
-        float x = fields[2].split("=")[1].toFloat();
-        float y = fields[3].split("=")[1].toFloat();
-        float theta = fields[4].split("=")[1].toFloat();
+        qreal x = fields[2].split("=")[1].toDouble();
+        qreal y = fields[3].split("=")[1].toDouble();
+        qreal theta = fields[4].split("=")[1].toDouble();
         imagePositionHash[name]=MyPointF(x, y, theta);
-//        _path.append(QPointF(merc_x(lon), merc_y(lat)));
     }
 
     // read in all detected cars' rects
@@ -149,8 +149,8 @@ void DataGenerator::getCarsGpsPosFromLogFiles(
         }
         QStringList fields = line.split("\t");
         QString name = fields[0].split(":")[1];
-        float x = fields[2].toFloat();
-        float y = fields[4].toFloat();
+        qreal x = fields[2].toDouble();
+        qreal y = fields[4].toDouble();
         carPosHash[name].append(QPointF(x, y));
     }
     getCarPositionsFromAllDataLaser(date, allUsedImages, carPosHash, imagePositionHash);
@@ -164,7 +164,7 @@ void DataGenerator::getCarsGpsPosFromLogFiles(
 void DataGenerator::updateOccupancy(
         const QString& date,
         const QPointF& thisPointInMeters,
-        const float &angleOfThisGpsPointSystem,
+        const qreal &angleOfThisGpsPointSystem,
         QVector<QVector3D>& carPositions,
         KmlWriter* kmlWriter,
         const QString &name)
@@ -190,25 +190,26 @@ void DataGenerator::updateOccupancy(
         QPointF carGlobalPos = transform.map(carInCameraViewPosition);
         carCorrectPositions.push_back(carGlobalPos);
         _cars.push_back(carGlobalPos);
-        kmlWriter->addPoint(0, name,
-                            QPointF(merc_lon(carGlobalPos.x()), merc_lat(carGlobalPos.y())));
+//        kmlWriter->addPoint(0, name,
+//                            QPointF(merc_lon(carGlobalPos.x()), merc_lat(carGlobalPos.y())));
     }
     _path.append(thisPointInMeters);
-    _grids[date].add(thisPointInMeters,
-              carCorrectPositions,
-              marginPoints);
+//    _grids[date].add(thisPointInMeters,
+//              carCorrectPositions,
+//              marginPoints);
+//    _parkingLots.update(carCorrectPositions);
 }
 
 void DataGenerator::updateOccupancyLaser(
         const QString& date,
         const QPointF& thisPointInMeters,
-        const float &angleOfThisGpsPointSystem,
+        const qreal &angleOfThisGpsPointSystem,
         QVector<QPointF>& carPositions,
         KmlWriter* kmlWriter,
         const QString &name)
 {
     QVector<QPointF> carCorrectPositions;
-    qreal maxDist = 30;
+    qreal maxDist = 20;
     qreal fieldOfView = M_PI * 97. / 180.; // in radians
     QPointF leftMostPoint(maxDist, maxDist * tan(-fieldOfView / 2));
     QPointF rightMostPoint(maxDist, maxDist * tan(fieldOfView / 2));
@@ -229,6 +230,7 @@ void DataGenerator::updateOccupancyLaser(
     _grids[date].add(thisPointInMeters,
               carCorrectPositions,
               marginPoints);
+    _parkingLots.update(carCorrectPositions);
 }
 
 void DataGenerator::getCarPositionsFromAllData(
@@ -242,7 +244,7 @@ void DataGenerator::getCarPositionsFromAllData(
     for (const auto& name: allImageNames)
     {
         MyPointF thisPoint = imageGpsHash.value(name);
-        float angleOfThisGpsPointSystem = thisPoint.theta() * 180 / M_PI;
+        qreal angleOfThisGpsPointSystem = thisPoint.theta() * 180 / M_PI;
         QVector<QVector3D> carPositions = carPosHash.value(name);
         updateOccupancy(
                     "hack",
@@ -268,7 +270,7 @@ void DataGenerator::getCarPositionsFromAllDataLaser(
     for (const auto& name: allImageNames)
     {
         MyPointF thisPoint = imageGpsHash.value(name);
-        float angleOfThisGpsPointSystem = thisPoint.theta() * 180 / M_PI;
+        qreal angleOfThisGpsPointSystem = thisPoint.theta() * 180 / M_PI;
         QVector<QPointF> carPositions = carPosHash.value(name);
         updateOccupancyLaser(
                     date,
@@ -282,6 +284,7 @@ void DataGenerator::getCarPositionsFromAllDataLaser(
         name  = "mymap" + name;
 //        qDebug() << name;
     }
+    _parkingLots.updateLeftFree();
     delete kmlWriter;
 }
 

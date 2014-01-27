@@ -1,23 +1,8 @@
 #ifndef OCCUPANCY_PREDICTOR_H
 #define OCCUPANCY_PREDICTOR_H
 
-#include "occupancygrid.h"
-
-class OccupancyCell {
-public:
-    int occupied;
-    int free;
-    OccupancyCell()
-    {
-        occupied = 0;
-        free = 0;
-    }
-    OccupancyCell(int occ, int fr)
-    {
-        occupied = occ;
-        free = fr;
-    }
-};
+#include "occupancy_grid.h"
+#include "occupancy_cell.h"
 
 typedef QHash<int, QHash<int, OccupancyCell> > PredictedOccupancyGrid;
 

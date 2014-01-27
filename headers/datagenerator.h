@@ -8,9 +8,10 @@
 #include <QXmlStreamReader>
 #include <QPolygonF>
 #include "kmlwriter.h"
-#include "occupancygrid.h"
+#include "occupancy_grid.h"
 #include "point_with_rot.h"
 #include "logReader.h"
+#include "parking_lots.h"
 
 class DataGenerator: public QObject
 {
@@ -30,6 +31,7 @@ private:
     QVector<QPolygonF> _other;
     QVector<QPointF> _cars;
     QPolygonF _path;
+    ParkingLots _parkingLots;
     QHash<QString, OccupancyGrid> _grids;
 
     void getNodesAndWaysFromXml();
@@ -52,13 +54,12 @@ private:
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);
     void updateOccupancy(const QString &date, const QPointF& thisPointInMeters,
-            const float &angleOfThisGpsPointSystem,
+            const qreal &angleOfThisGpsPointSystem,
             QVector<QVector3D> &carPositions,
             KmlWriter *kmlWriter, const QString &name);
-    void updateOccupancyLaser(
-            const QString &date,
+    void updateOccupancyLaser(const QString &date,
             const QPointF& thisPointInMeters,
-            const float &angleOfThisGpsPointSystem,
+            const qreal &angleOfThisGpsPointSystem,
             QVector<QPointF>& carPositions,
             KmlWriter* kmlWriter,
             const QString &name);

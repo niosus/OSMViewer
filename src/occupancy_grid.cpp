@@ -1,4 +1,4 @@
-#include "occupancygrid.h"
+#include "occupancy_grid.h"
 #include "gridtraversal.h"
 #include <math.h>
 #include <set>
@@ -179,7 +179,7 @@ void OccupancyGrid::writeMapImage(int xMin, int yMin, int xMax, int yMax, QStrin
             {
                 for (int yy = y; yy < y + cellSize; ++yy)
                 {
-                    QPointF point(xMin + x/cellSize, yMin + y/cellSize);
+                    QPointF point(xMin + (qreal)xx/cellSize, yMin + (qreal)yy/cellSize);
                     qreal prob = this->getCellProbability(point);
                     if (xx < image.width() && yy < image.height())
                     {

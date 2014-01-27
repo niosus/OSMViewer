@@ -8,7 +8,7 @@
 #include <QWidget>
 #include <QWheelEvent>
 #include <QPolygonF>
-#include "occupancygrid.h"
+#include "occupancy_grid.h"
 #include "logReader.h"
 
 
