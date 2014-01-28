@@ -25,6 +25,7 @@ private:
     QVector<QPointF> _centers;
     QVector<OccupancyCell> _occupancy;
     QVector<int> _tempUpdatedIndeces;
+    QVector<QPointF> _realDetections;
 
     static const int _numOfRows = 15;
     static const int _numOfCols = 12;

@@ -28,9 +28,9 @@ ParkingLots::ParkingLots(const qreal &leftCorner, const qreal &bottomCorner)
                     leftBottomCorner.x() * _metersInPx + leftBottomUtm.x() +
                     colNum * _width * _metersInPx +
                     (_width / 2) * _metersInPx;
-            // move if there is a gap between
             // the rows are as follows:
             // 01___23___45___67___ ...
+            // so we need to account for the gap
             tempPoint.rx() = tempPoint.x() + (colNum / 2) * (_gap) * _metersInPx;
             _centers.append(tempPoint);
             _occupancy.append(emptyCell);
@@ -41,7 +41,7 @@ ParkingLots::ParkingLots(const qreal &leftCorner, const qreal &bottomCorner)
 void ParkingLots::updateClosest(const QPointF &detection)
 {
     qDebug() <<qSetRealNumberPrecision(15)<< "searching close to "<<detection;
-    qreal minDist = 10E+20; //should be big enough
+    qreal minDist = 1E+20; //should be big enough
     int minIndex = -1;
     qDebug()<< "centers: "<<_centers.size();
     for (int i = 0; i < _centers.size(); ++i)
@@ -61,6 +61,7 @@ void ParkingLots::updateClosest(const QPointF &detection)
     }
     _occupancy[minIndex].occupied++;
     _tempUpdatedIndeces.append(minIndex);
+    _realDetections.append(detection);
 }
 
 void ParkingLots::updateLeftFree()
@@ -104,31 +105,39 @@ void ParkingLots::writeImage(
     {
         int currentCenterX = floor((_centers[i].x() - xMin) * cellSize);
         int currentCenterY = floor((_centers[i].y() - yMin) * cellSize);
-        for (int xx = currentCenterX - cellSize / 2; xx < currentCenterX + cellSize / 2; ++xx)
+        for (int xx = currentCenterX - 2 * cellSize; xx < currentCenterX + 2 * cellSize; ++xx)
         {
-           for (int yy = currentCenterY - cellSize / 2; yy < currentCenterY + cellSize / 2; ++yy)
+           for (int yy = currentCenterY - cellSize; yy < currentCenterY + cellSize; ++yy)
            {
                OccupancyCell cell = _occupancy[i];
                qDebug()<<"free"<<cell.free<<"occ"<<cell.occupied;
-               /*if (cell.free < 1 || cell.occupied < 1)
+               if (cell.free + cell.occupied < 1)
                {
-                   image.setPixel(xx, image.height() - yy, colorGray.rgb());
+                    image.setPixel(xx, image.height() - yy, colorGray.rgb());
                }
-               else*/ if (cell.free > cell.occupied)
-               {
-                   image.setPixel(xx, image.height() - yy, colorGreen.rgb());
-               }
-               else if (cell.occupied > cell.free)
-               {
-                   image.setPixel(xx, image.height() - yy, colorRed.rgb());
-               }
-               else
-               {
-                   image.setPixel(xx, image.height() - yy, colorGray.rgb());
-               }
+               // amount of green color from 0 to 1
+               qreal greenAmount = (qreal) cell.free / (cell.free + cell.occupied);
+               greenAmount*=255;
+               QColor color = QColor(255 - greenAmount, greenAmount, 0);
+               image.setPixel(xx, image.height() - yy, color.rgb());
            }
         }
     }
+
+//    for (const QPointF& detection: _realDetections)
+//    {
+//        int currentX = floor((detection.x() - xMin) * cellSize);
+//        int currentY = floor((detection.y() - yMin) * cellSize);
+//        for (int xx = currentX - 2; xx < currentX + 2; ++xx)
+//        {
+//           for (int yy = currentY - 2; yy < currentY + 2; ++yy)
+//           {
+//               QColor color = QColor(255, 255, 255);
+//               image.setPixel(xx, image.height() - yy, color.rgb());
+//           }
+//        }
+//    }
+
     QString dirPath = QCoreApplication::applicationDirPath();
     dirPath = dirPath.left(dirPath.lastIndexOf('/')) + "/OSMViewer/grids/";
     qDebug() << "saving";

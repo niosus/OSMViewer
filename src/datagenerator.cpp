@@ -15,7 +15,7 @@
 
 
 DataGenerator::DataGenerator(){
-    _parkingLots = ParkingLots(762, 884);
+    _parkingLots = ParkingLots(762, 1700 - 884);
 }
 
 void DataGenerator::generateData()
@@ -31,7 +31,7 @@ void DataGenerator::generateData()
                        tempHash[LogReader::IMAGES_POS],
                        tempHash[LogReader::CARS_POS]);
     }
-    _parkingLots.writeImage(871831, 6077369, 872040, 6077539, "parking_lots");
+    _parkingLots.writeImage(871851, 6077399, 872040, 6077539, "parking_lots");
 //    getNodesAndWaysFromXml();
 //    getCarsFromLogFiles();
 //    emit dataGenerated(_roads, _houses, _parkings, _other);
