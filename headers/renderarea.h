@@ -8,8 +8,6 @@
 #include <QWidget>
 #include <QWheelEvent>
 #include <QPolygonF>
-#include "occupancy_grid.h"
-#include "logReader.h"
 
 
 //! [0]
@@ -31,9 +29,6 @@ public slots:
             QVector<QPolygonF> &houses,
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);
-    void receiveNewCars(QVector<QPointF> &cars);
-    void receiveNewPath(QPolygonF &path);
-    void receiveGrids(QHash<QString, OccupancyGrid>& grids);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -44,12 +39,9 @@ protected:
 
 private:
     QVector<QPolygonF> _roads;
-    QVector<QPointF> _cars;
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
-    QPolygonF _path;
-    OccupancyGrid _grid;
 
     QHash<QString, double> _bounds;
 

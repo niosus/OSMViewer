@@ -34,15 +34,6 @@ Window::Window()
     QObject::connect(
                 dataGenerator, SIGNAL(boundariesUpdated(QHash<QString, double>&)),
                 renderArea, SLOT(updateBounds(QHash<QString, double>&)));
-    QObject::connect(
-                dataGenerator, SIGNAL(carsGenerated(QVector<QPointF>&)),
-                renderArea, SLOT(receiveNewCars(QVector<QPointF>&)));
-    QObject::connect(
-                dataGenerator, SIGNAL(pathGenerated(QPolygonF&)),
-                renderArea, SLOT(receiveNewPath(QPolygonF&)));
-    QObject::connect(
-                dataGenerator, SIGNAL(gridsGenerated(QHash<QString, OccupancyGrid>&)),
-                renderArea, SLOT(receiveGrids(QHash<QString, OccupancyGrid>&)));
     dataGenerator->generateData();
 }
 

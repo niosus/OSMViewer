@@ -7,11 +7,7 @@
 #include <QHash>
 #include <QXmlStreamReader>
 #include <QPolygonF>
-#include "kmlwriter.h"
-#include "occupancy_grid.h"
 #include "point_with_rot.h"
-#include "logReader.h"
-#include "parking_lots.h"
 
 class DataGenerator: public QObject
 {
@@ -29,40 +25,11 @@ private:
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
-    QVector<QPointF> _cars;
-    QPolygonF _path;
-    ParkingLots _parkingLots;
-    QHash<QString, OccupancyGrid> _grids;
 
     void getNodesAndWaysFromXml();
-    void getCarsFromLogFiles();
-    void getCarsGpsPosFromLogFiles(const QString &date,
-            const QString &imagesGpsFileName,
-            const QString &detectedCarsFileName);
-    void getCarPositionsFromAllData(
-            const QVector<QString> &allImageNames,
-            const QMap<QString, QVector<QVector3D> > &carPosHash,
-            const QMap<QString, MyPointF> &imageGpsHash);
-    void getCarPositionsFromAllDataLaser(
-            const QString &date,
-            const QVector<QString> &allImageNames,
-            const QMap<QString, QVector<QPointF> > &carPosHash,
-            const QMap<QString, MyPointF> &imageGpsHash);
-    QPointF getPrevGpsPoint(const QString &name,
-            const QMap<QString, MyPointF> &imagePositionHash);
     void storeNewNode(QXmlStreamReader *xmlReader);
     void updateBounds(QXmlStreamReader *xmlReader);
     void storeNewWay(QXmlStreamReader *xmlReader);
-    void updateOccupancy(const QString &date, const QPointF& thisPointInMeters,
-            const qreal &angleOfThisGpsPointSystem,
-            QVector<QVector3D> &carPositions,
-            KmlWriter *kmlWriter, const QString &name);
-    void updateOccupancyLaser(const QString &date,
-            const QPointF& thisPointInMeters,
-            const qreal &angleOfThisGpsPointSystem,
-            QVector<QPointF>& carPositions,
-            KmlWriter* kmlWriter,
-            const QString &name);
 
 signals:
     void boundariesUpdated(QHash<QString, double> &bounds);
@@ -71,9 +38,6 @@ signals:
             QVector<QPolygonF> &houses,
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);
-    void carsGenerated(QVector<QPointF> &cars);
-    void pathGenerated(QPolygonF &path);
-    void gridsGenerated(QHash<QString, OccupancyGrid>& grid);
 
 };
 

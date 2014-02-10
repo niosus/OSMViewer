@@ -6,7 +6,6 @@
 #include <QFont>
 #include <QFontMetrics>
 
-#include "occupancy_predictor.h"
 #include "renderarea.h"
 
 RenderArea::RenderArea(QWidget *parent)
@@ -92,37 +91,6 @@ void RenderArea::receiveNewData(
     update();
 }
 
-void RenderArea::receiveGrids(QHash<QString, OccupancyGrid>& grids)
-{
-    int minX, maxX, minY, maxY;
-    qDebug() << grids.keys();
-    for (const QString& date: grids.keys())
-    {
-        grids[date].getBounds(minX, maxX, minY, maxY);
-        qDebug()<<"bounds received"<< minX << maxX << minY << maxY;
-//        this->_grid = OccupancyGrid(grids["log_15_1_2014"]);
-        // Hack the map max min vals are hardcoded
-        //TODO
-        grids[date].writeMapImage(871831, 6077369, 872040, 6077539, "mymap_" + date);
-    }
-    OccupancyPredictor predictor;
-    predictor.predictFromGrids(grids);
-    predictor.writeImage(871831, 6077369, 872040, 6077539, "my_prediction");
-    update();
-}
-
-void RenderArea::receiveNewCars(QVector<QPointF> &cars)
-{
-    this->_cars = cars;
-    update();
-}
-
-void RenderArea::receiveNewPath(QPolygonF &path)
-{
-    this->_path = path;
-    update();
-}
-
 void RenderArea::updateBounds(QHash<QString, double> &bounds)
 {
     _bounds = bounds;
@@ -185,97 +153,6 @@ void RenderArea::drawRoads(QPainter & painter)
 
     painter.restore();
 }
-
-void RenderArea::drawCameraPos(QPainter & painter)
-{
-    painter.save();
-
-    QPen pen(QColor(250,50,150));
-    pen.setCapStyle(Qt::RoundCap);
-
-    pen.setWidthF(2);
-    painter.setOpacity(1);
-    painter.setPen(pen);
-
-    painter.setBrush(Qt::SolidPattern);
-
-    painter.drawPoints(_path);
-
-    painter.restore();
-}
-
-
-void RenderArea::drawPath(QPainter & painter)
-{
-    painter.save();
-    qDebug()<<_path[0];
-    QPen pen(QColor(0,50,250));
-    pen.setCapStyle(Qt::RoundCap);
-
-    pen.setWidthF(1);
-    painter.setOpacity(0.5);
-    painter.setPen(pen);
-
-    painter.setBrush(Qt::SolidPattern);
-    painter.drawPolyline(_path);
-
-    painter.restore();
-}
-
-void RenderArea::drawCars(QPainter & painter)
-{
-    painter.save();
-
-    QPen pen(QColor(255,0,0));
-    pen.setCapStyle(Qt::RoundCap);
-
-    painter.setOpacity(0.5);
-    pen.setWidthF(1);
-    painter.setPen(pen);
-
-    for (QPointF car : _cars)
-    {
-        painter.drawPoint(car);
-    }
-
-    painter.restore();
-}
-
-
-void RenderArea::drawOccupancyGrid(QPainter & painter)
-{
-    painter.save();
-
-    QPen pen(QColor(255,0,0));
-    pen.setCapStyle(Qt::SquareCap);
-
-    painter.setOpacity(0.5);
-    pen.setWidthF(_grid.getCellWidth());
-    painter.setPen(pen);
-
-    int minX, maxX, minY, maxY;
-    _grid.getBounds(minX, maxX, minY, maxY);
-    for (qreal x = minX; x <= maxX; x+=_grid.getCellWidth())
-    {
-        for (qreal y = minY; y <= maxY; y+=_grid.getCellWidth())
-        {
-            qreal prob = _grid.getCellProbability(QPointF(x, y));
-            if (prob < 0) {
-                pen.setColor(QColor(0,0,255));
-                painter.setPen(pen);
-                painter.setOpacity(0.3);
-            } else {
-                pen.setColor(QColor(255,0,0));
-                painter.setPen(pen);
-                painter.setOpacity(prob);
-            }
-            painter.drawPoint(x, y);
-        }
-    }
-
-    painter.restore();
-}
-
 
 void RenderArea::drawHouses(QPainter & painter)
 {
@@ -340,13 +217,10 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 
     // draw world
     painter.setWorldTransform(this->worldToView);
-//    drawParkings(painter);
+    drawParkings(painter);
     drawRoads(painter);
     drawHouses(painter);
     drawOther(painter);
-//    drawCars(painter);
-    drawPath(painter);
-    drawOccupancyGrid(painter);
     // draw on map
     painter.setWorldTransform(QTransform());
     drawRuler(painter);
